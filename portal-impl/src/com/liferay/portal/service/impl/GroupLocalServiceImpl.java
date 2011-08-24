@@ -91,6 +91,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The implementation of the group local service.
+ *
  * @author Brian Wing Shun Chan
  * @author Alexander Chow
  * @author Bruno Farache
@@ -98,10 +100,38 @@ import java.util.Map;
  */
 public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
+	/**
+	 * Constructs a group local service.
+	 */
 	public GroupLocalServiceImpl() {
 		initImportLARFile();
 	}
 
+	/**
+	 * Adds a group.
+	 *
+	 * @param  userId the primary key of the group's creator/owner
+	 * @param  className the entity's class name
+	 * @param  classPK the primary key of the entity's instance
+	 * @param  liveGroupId the primary key of the live group
+	 * @param  name the entity's name
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  type the group's type. For more information see {@link
+	 *         com.liferay.portal.model.GroupConstants}
+	 * @param  friendlyURL the group's friendlyURL (optionally
+	 *         <code>null</code>)
+	 * @param  site whether the group is to be associated with a main site
+	 * @param  active whether the group is active
+	 * @param  serviceContext the service context to be applied (optionally
+	 *         <code>null</code>). Can specify the group's asset category IDs,
+	 *         asset tag names, and whether the group is for staging
+	 * @return the group
+	 * @throws PortalException if a creator could not be found, if the group's
+	 *         information was invalid, if a layout could not be found, or if a
+	 *         valid friendly URL could not be created for the group
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group addGroup(
 			long userId, String className, long classPK, long liveGroupId,
 			String name, String description, int type, String friendlyURL,
@@ -250,6 +280,29 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return group;
 	}
 
+	/**
+	 * Adds the group using the default live group.
+	 *
+	 * @param  userId the primary key of the group's creator/owner
+	 * @param  className the entity's class name
+	 * @param  classPK the primary key of the entity's instance
+	 * @param  name the entity's name
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  type the group's type. For more information see {@link
+	 *         com.liferay.portal.model.GroupConstants}
+	 * @param  friendlyURL the group's friendlyURL
+	 * @param  site whether the group is to be associated with a main site
+	 * @param  active whether the group is active
+	 * @param  serviceContext the service context to be applied (optionally
+	 *         <code>null</code>). Can specify the group's asset category IDs,
+	 *         asset tag names, and whether the group is for staging
+	 * @return the group
+	 * @throws PortalException if a creator could not be found, if the group's
+	 *         information was invalid, if a layout could not be found, or if a
+	 *         valid friendly URL could not be created for the group
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group addGroup(
 			long userId, String className, long classPK, String name,
 			String description, int type, String friendlyURL, boolean site,
@@ -261,6 +314,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			name, description, type, friendlyURL, site, active, serviceContext);
 	}
 
+	/**
+	 * Adds the groups to the role.
+	 *
+	 * @param  roleId the primary key of the role
+	 * @param  groupIds the primary keys of the groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public void addRoleGroups(long roleId, long[] groupIds)
 		throws SystemException {
 
@@ -269,6 +329,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		PermissionCacheUtil.clearCache();
 	}
 
+	/**
+	 * Adds the user to the groups.
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  groupIds the primary keys of the groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public void addUserGroups(long userId, long[] groupIds)
 		throws SystemException {
 
@@ -277,6 +344,16 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		PermissionCacheUtil.clearCache();
 	}
 
+	/**
+	 * Associates a group to the company if none exists.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @throws PortalException if a default user for the company could not be
+	 *         found, if the group's information was invalid, if a layout could
+	 *         not be found, or if a valid friendly URL could not be created
+	 *         for the group
+	 * @throws SystemException if a system exception occurred
+	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public void checkCompanyGroup(long companyId)
 		throws PortalException, SystemException {
@@ -295,6 +372,14 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 	}
 
+	/**
+	 * Associates the company with all applicable system groups, creating
+	 * necessary system groups if they do not exist.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @throws PortalException if a new system group could not be created
+	 * @throws SystemException if a system exception occurred
+	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public void checkSystemGroups(long companyId)
 		throws PortalException, SystemException {
@@ -373,6 +458,22 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 	}
 
+	/**
+	 * Deletes the group.
+	 *
+	 * <p>
+	 * The group is unstaged and its assets and resources including layouts,
+	 * membership requests, subscriptions, teams, blogs, bookmarks, calendar
+	 * events, image gallery, journals, message boards, polls, shopping related
+	 * entities, software catalog, and wikis are also deleted.
+	 * </p>
+	 *
+	 * @param  group the group
+	 * @throws PortalException if the group was a system group, or if the user
+	 *         did not have permission to delete the group or its assets or its
+	 *         resources
+	 * @throws SystemException if a system exception occurred
+	 */
 	@Override
 	public void deleteGroup(Group group)
 		throws PortalException, SystemException {
@@ -540,6 +641,23 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		PermissionCacheUtil.clearCache();
 	}
 
+	/**
+	 * Deletes the group.
+	 *
+	 * <p>
+	 * The group is unstaged and its assets and resources including layouts,
+	 * membership requests, subscriptions, teams, blogs, bookmarks, calendar
+	 * events, image gallery, journals, message boards, polls, shopping related
+	 * entities, software catalog, and wikis are also deleted.
+	 * </p>
+	 *
+	 * @param  groupId the primary key of the group
+	 * @throws PortalException if a group with the primary key could not be
+	 *         found, if the group was a system group, or if the user did not
+	 *         have permission to delete the group, its assets, or its
+	 *         resources
+	 * @throws SystemException if a system exception occurred
+	 */
 	@Override
 	public void deleteGroup(long groupId)
 		throws PortalException, SystemException {
@@ -549,6 +667,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		deleteGroup(group);
 	}
 
+	/**
+	 * Returns the group with the friendly URL, using the finder cache.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  friendlyURL the friendly URL
+	 * @return the group with the friendly URL, or <code>null</code> if a
+	 *         matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group fetchFriendlyURLGroup(long companyId, String friendlyURL)
 		throws SystemException {
 
@@ -561,11 +688,29 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.fetchByC_F(companyId, friendlyURL);
 	}
 
+	/**
+	 * Returns the group with the primary key, using the finder cache.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @return the group with the primary key, or <code>null</code> if a group
+	 *         with the primary key could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	@ThreadLocalCachable
 	public Group fetchGroup(long groupId) throws SystemException {
 		return groupPersistence.fetchByPrimaryKey(groupId);
 	}
 
+	/**
+	 * Returns the group with the name and associated company, using the finder
+	 * cache.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  name the group's name
+	 * @return the group with the name and associated company, or
+	 *         <code>null</code> if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group fetchGroup(long companyId, String name)
 		throws SystemException {
 
@@ -579,6 +724,14 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.fetchByC_N(companyId, name);
 	}
 
+	/**
+	 * Returns the group associated with the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @return the group associated with the company
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getCompanyGroup(long companyId)
 		throws PortalException, SystemException {
 
@@ -587,16 +740,53 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.findByC_C_C(companyId, classNameId, companyId);
 	}
 
+	/**
+	 * Returns a range of all the groups associated with the company.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the range of groups associated with the company
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getCompanyGroups(long companyId, int start, int end)
 		throws SystemException {
 
 		return groupPersistence.findByCompanyId(companyId, start, end);
 	}
 
+	/**
+	 * Returns the number of groups associated with the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @return the number of groups associated with the company
+	 * @throws SystemException if a system exception occurred
+	 */
 	public int getCompanyGroupsCount(long companyId) throws SystemException {
 		return groupPersistence.countByCompanyId(companyId);
 	}
 
+	/**
+	 * Returns the group with the friendly URL.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  friendlyURL the group's friendlyURL
+	 * @return the group with the friendly URL
+	 * @throws PortalException if a matching group could not be found, or if
+	 *         the friendly URL was invalid
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getFriendlyURLGroup(long companyId, String friendlyURL)
 		throws PortalException, SystemException {
 
@@ -609,6 +799,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.findByC_F(companyId, friendlyURL);
 	}
 
+	/**
+	 * Returns the group with the primary key.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @return the group with the primary key
+	 * @throws PortalException if a group with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	@Override
 	@ThreadLocalCachable
 	public Group getGroup(long groupId)
@@ -617,6 +816,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.findByPrimaryKey(groupId);
 	}
 
+	/**
+	 * Returns the group with the name.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  name the group's name
+	 * @return the group with the name
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getGroup(long companyId, String name)
 		throws PortalException, SystemException {
 
@@ -630,6 +838,14 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.findByC_N(companyId, name);
 	}
 
+	/**
+	 * Returns the groups with the primary keys.
+	 *
+	 * @param  groupIds the primary keys of the groups
+	 * @return the groups with the primary keys
+	 * @throws PortalException if any one of the groups could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getGroups(long[] groupIds)
 		throws PortalException, SystemException {
 
@@ -644,6 +860,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groups;
 	}
 
+	/**
+	 * Returns the group associated with the layout.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  plid the primary key of the layout
+	 * @return the group associated with the layout
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getLayoutGroup(long companyId, long plid)
 		throws PortalException, SystemException {
 
@@ -652,6 +877,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.findByC_C_C(companyId, classNameId, plid);
 	}
 
+	/**
+	 * Returns the group associated with the layout prototype.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  layoutPrototypeId the primary key of the layout prototype
+	 * @return the group associated with the layout prototype
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getLayoutPrototypeGroup(long companyId, long layoutPrototypeId)
 		throws PortalException, SystemException {
 
@@ -661,6 +895,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			companyId, classNameId, layoutPrototypeId);
 	}
 
+	/**
+	 * Returns the group associated with the layout set prototype.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  layoutSetPrototypeId the primary key of the layout set prototype
+	 * @return the group associated with the layout set prototype
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getLayoutSetPrototypeGroup(
 			long companyId, long layoutSetPrototypeId)
 		throws PortalException, SystemException {
@@ -671,10 +914,39 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			companyId, classNameId, layoutSetPrototypeId);
 	}
 
+	/**
+	 * Returns all live groups.
+	 *
+	 * @return all live groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getLiveGroups() throws SystemException {
 		return groupFinder.findByLiveGroups();
 	}
 
+	/**
+	 * Returns a range of all non-system groups matching the named class that
+	 * have no layouts.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  className the entity's class name
+	 * @param  privateLayout whether to include groups with private layout sets
+	 *         or non-private layout sets
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the range of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getNoLayoutsGroups(
 			String className, boolean privateLayout, int start, int end)
 		throws SystemException {
@@ -685,10 +957,27 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			classNameId, privateLayout, start, end);
 	}
 
+	/**
+	 * Returns all non-system groups having <code>null</code> or empty friendly
+	 * URLs.
+	 *
+	 * @return the non-system groups having <code>null</code> or empty friendly
+	 *         URLs
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getNullFriendlyURLGroups() throws SystemException {
 		return groupFinder.findByNullFriendlyURL();
 	}
 
+	/**
+	 * Returns the group associated with the organization.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  organizationId the primary key of the organization
+	 * @return the group associated with the organization
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getOrganizationGroup(long companyId, long organizationId)
 		throws PortalException, SystemException {
 
@@ -698,6 +987,12 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			companyId, classNameId, organizationId);
 	}
 
+	/**
+	 * Returns the groups associated with the organizations.
+	 *
+	 * @param  organizations the organizations
+	 * @return the groups associated with the organizations
+	 */
 	public List<Group> getOrganizationsGroups(
 		List<Organization> organizations) {
 
@@ -714,6 +1009,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return organizationGroups;
 	}
 
+	/**
+	 * Returns all the groups related to the organizations.
+	 *
+	 * @param  organizations the organizations
+	 * @return the groups related to the organizations
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getOrganizationsRelatedGroups(
 			List<Organization> organizations)
 		throws SystemException {
@@ -732,16 +1034,40 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return organizationGroups;
 	}
 
+	/**
+	 * Returns all the groups associated with the role.
+	 *
+	 * @param  roleId the primary key of the role
+	 * @return the groups associated with the role
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getRoleGroups(long roleId) throws SystemException {
 		return rolePersistence.getGroups(roleId);
 	}
 
+	/**
+	 * Returns the staging group.
+	 *
+	 * @param  liveGroupId the primary key of the live group
+	 * @return the staging group
+	 * @throws PortalException if a matching staging group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getStagingGroup(long liveGroupId)
 		throws PortalException, SystemException {
 
 		return groupPersistence.findByLiveGroupId(liveGroupId);
 	}
 
+	/**
+	 * Returns the group associated with the user.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  userId the primary key of the user
+	 * @return the group associated with the user
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getUserGroup(long companyId, long userId)
 		throws PortalException, SystemException {
 
@@ -750,6 +1076,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return groupPersistence.findByC_C_C(companyId, classNameId, userId);
 	}
 
+	/**
+	 * Returns the group associated with the user group.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  userGroupId the primary key of the user group
+	 * @return the group associated with the user group
+	 * @throws PortalException if a matching group could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group getUserGroupGroup(long companyId, long userGroupId)
 		throws PortalException, SystemException {
 
@@ -759,12 +1094,35 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			companyId, classNameId, userGroupId);
 	}
 
+	/**
+	 * Returns all the user's site groups and immediate organization groups.
+	 * System and staged groups are not included.
+	 *
+	 * @param  userId the primary key of the user
+	 * @return the user's groups and organization groups
+	 * @throws PortalException if a user with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getUserGroups(long userId)
 		throws PortalException, SystemException {
 
 		return getUserGroups(userId, false);
 	}
 
+	/**
+	 * Returns all the user's site groups and immediate organization groups,
+	 * optionally including the user's inherited organization groups and user
+	 * groups. System and staged groups are not included.
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  inherit whether to include the user's inherited organization
+	 *         groups and user groups
+	 * @return the user's groups and immediate organization groups
+	 * @throws PortalException if a user with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getUserGroups(long userId, boolean inherit)
 		throws PortalException, SystemException {
 
@@ -772,6 +1130,34 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			userId, inherit, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 	}
 
+	/**
+	 * Returns a name ordered range of all the user's site groups and immediate
+	 * organization groups, optionally including the user's inherited
+	 * organization groups and user groups. System and staged groups are not
+	 * included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  inherit whether to include the user's inherited organization
+	 *         groups and user groups
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the range of the user's groups and immediate organization groups
+	 *         ordered by name
+	 * @throws PortalException if a user with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getUserGroups(
 			long userId, boolean inherit, int start, int end)
 		throws PortalException, SystemException {
@@ -792,12 +1178,45 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 	}
 
+	/**
+	 * Returns a name ordered range of all the user's site groups and immediate
+	 * organization groups. System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the range of the user's groups and organization groups ordered
+	 *         by name
+	 * @throws PortalException if a user with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getUserGroups(long userId, int start, int end)
 		throws PortalException, SystemException {
 
 		return getUserGroups(userId, false, start, end);
 	}
 
+	/**
+	 * Returns the groups associated with the user groups.
+	 *
+	 * @param  userGroups the user groups
+	 * @return the groups associated with the user groups
+	 * @throws PortalException if any one of the user group's group could not
+	 *         be found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getUserGroupsGroups(List<UserGroup> userGroups)
 		throws PortalException, SystemException {
 
@@ -814,6 +1233,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return userGroupGroups;
 	}
 
+	/**
+	 * Returns all the groups related to the user groups.
+	 *
+	 * @param  userGroups the user groups
+	 * @return the groups related to the user groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getUserGroupsRelatedGroups(List<UserGroup> userGroups)
 		throws SystemException {
 
@@ -831,6 +1257,32 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return userGroupGroups;
 	}
 
+	/**
+	 * Returns the range of all groups associated with the user's organization
+	 * groups, including the ancestors of the organization groups, unless
+	 * portal property <code>organizations.membership.strict</code> is set to
+	 * <code>true</code>.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  start the lower bound of the range of groups to consider
+	 * @param  end the upper bound of the range of groups to consider (not
+	 *         inclusive)
+	 * @return the range of groups associated with the user's organization
+	 *         groups
+	 * @throws PortalException if a user with the primary key could not be
+	 *         found or if another portal exception occurred
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> getUserOrganizationsGroups(
 			long userId, int start, int end)
 		throws PortalException, SystemException {
@@ -856,12 +1308,29 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return userOrgsGroups;
 	}
 
+	/**
+	 * Returns <code>true</code> if the group is associated with the role.
+	 *
+	 * @param  roleId the primary key of the role
+	 * @param  groupId the primary key of the group
+	 * @return <code>true</code> if the group is associated with the role;
+	 *         <code>false</code> otherwise
+	 * @throws SystemException if a system exception occurred
+	 */
 	public boolean hasRoleGroup(long roleId, long groupId)
 		throws SystemException {
 
 		return rolePersistence.containsGroup(roleId, groupId);
 	}
 
+	/**
+	 * Returns <code>true</code> if the live group has a staging group.
+	 *
+	 * @param  liveGroupId the primary key of the live group
+	 * @return <code>true</code> if the live group has a staging group;
+	 *         <code>false</code> otherwise
+	 * @throws SystemException if a system exception occurred
+	 */
 	public boolean hasStagingGroup(long liveGroupId) throws SystemException {
 		if (groupPersistence.fetchByLiveGroupId(liveGroupId) != null) {
 			return true;
@@ -871,12 +1340,36 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 	}
 
+	/**
+	 * Returns <code>true</code> if the user is immediately associated with the
+	 * group, or associated with the group via the user's organizations,
+	 * inherited organizations, or user groups.
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  groupId the primary key of the group
+	 * @return <code>true</code> if the user is associated with the group;
+	 *         <code>false</code> otherwise
+	 * @throws SystemException if a system exception occurred
+	 */
 	public boolean hasUserGroup(long userId, long groupId)
 		throws SystemException {
 
 		return hasUserGroup(userId, groupId, true);
 	}
 
+	/**
+	 * Returns <code>true</code> if the user is immediately associated with the
+	 * group, or optionally if the user is associated with the group via the
+	 * user's organizations, inherited organizations, or user groups.
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  groupId the primary key of the group
+	 * @param  inherit whether to include organization groups and user groups
+	 *         to which the user belongs in the determination
+	 * @return <code>true</code> if the user is associated with the group;
+	 *         <code>false</code> otherwise
+	 * @throws SystemException if a system exception occurred
+	 */
 	public boolean hasUserGroup(long userId, long groupId, boolean inherit)
 		throws SystemException {
 
@@ -888,6 +1381,42 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 	}
 
+	/**
+	 * Returns a name ordered range of all the groups that match the class name
+	 * IDs, name, and description, optionally including the user's inherited
+	 * organization groups and user groups. System and staged groups are not
+	 * included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the
+	 *         search (optionally <code>null</code>)
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and
+	 *         user groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry
+	 *         with key &quot;inherit&quot; mapped to a non-<code>null</code>
+	 *         object. For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> search(
 			long companyId, long[] classNameIds, String name,
 			String description,	LinkedHashMap<String, Object> params, int start,
@@ -899,6 +1428,43 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			null);
 	}
 
+	/**
+	 * Returns an ordered range of all the groups that match the class name
+	 * IDs, name, and description, optionally including the user's inherited
+	 * organization groups and user groups. System and staged groups are not
+	 * included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the group's class name IDs (optionally
+	 *         <code>null</code>)
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and
+	 *         user groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry
+	 *         with key &quot;inherit&quot; mapped to a non-<code>null</code>
+	 *         object. For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> search(
 			long companyId, long[] classNameIds, String name,
 			String description, LinkedHashMap<String, Object> params, int start,
@@ -916,6 +1482,38 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			end, obc);
 	}
 
+	/**
+	 * Returns a name ordered range of all the site groups and organization
+	 * groups that match the name and description, optionally including the
+	 * user's inherited organization groups and user groups. System and staged
+	 * groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in
+	 *         the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For
+	 *         more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> search(
 			long companyId, String name, String description,
 			LinkedHashMap<String, Object> params, int start, int end)
@@ -924,6 +1522,40 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return search(companyId, name, description, params, start, end, null);
 	}
 
+	/**
+	 * Returns an ordered range of all the site groups and organization groups
+	 * that match the name and description, optionally including the user's
+	 * inherited organization groups and user groups. System and staged groups
+	 * are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the
+	 * full result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in
+	 *         the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For
+	 *         more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
 	public List<Group> search(
 			long companyId, String name, String description,
 			LinkedHashMap<String, Object> params, int start, int end,
@@ -940,6 +1572,25 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			companyId, name, realName, description, params, start, end, obc);
 	}
 
+	/**
+	 * Returns the number of groups and immediate organization groups that
+	 * match the name and description, optionally including the user's
+	 * inherited organization groups and user groups. System and staged groups
+	 * are not included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For
+	 *         more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	@ThreadLocalCachable
 	public int searchCount(
 			long companyId, String name, String description,
@@ -952,6 +1603,26 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			companyId, name, realName, description, params);
 	}
 
+	/**
+	 * Returns the number of groups that match the class name IDs, name, and
+	 * description, optionally including the user's inherited organization
+	 * groups and user groups. System and staged groups are not included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the
+	 *         search (optionally <code>null</code>)
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For
+	 *         more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	@ThreadLocalCachable
 	public int searchCount(
 			long companyId, long[] classNameIds, String name,
@@ -964,6 +1635,14 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			companyId, classNameIds, name, realName, description, params);
 	}
 
+	/**
+	 * Sets the groups associated with the role, removing and adding
+	 * associations as necessary.
+	 *
+	 * @param  roleId the primary key of the role
+	 * @param  groupIds the primary keys of the groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public void setRoleGroups(long roleId, long[] groupIds)
 		throws SystemException {
 
@@ -972,6 +1651,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		PermissionCacheUtil.clearCache();
 	}
 
+	/**
+	 * Removes the groups from the role.
+	 *
+	 * @param  roleId the primary key of the role
+	 * @param  groupIds the primary keys of the groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public void unsetRoleGroups(long roleId, long[] groupIds)
 		throws SystemException {
 
@@ -980,6 +1666,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		PermissionCacheUtil.clearCache();
 	}
 
+	/**
+	 * Removes the user from the groups.
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  groupIds the primary keys of the groups
+	 * @throws SystemException if a system exception occurred
+	 */
 	public void unsetUserGroups(long userId, long[] groupIds)
 		throws SystemException {
 
@@ -990,6 +1683,18 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		PermissionCacheUtil.clearCache();
 	}
 
+	/**
+	 * Updates the group's asset replacing categories and tag names.
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  group the group
+	 * @param  assetCategoryIds the primary keys of the asset categories
+	 *         (optionally <code>null</code>)
+	 * @param  assetTagNames the asset tag names (optionally <code>null</code>)
+	 * @throws PortalException if a user with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public void updateAsset(
 			long userId, Group group, long[] assetCategoryIds,
 			String[] assetTagNames)
@@ -1009,6 +1714,18 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			group.getDescription(), null, null, null, 0, 0, null, false);
 	}
 
+	/**
+	 * Updates the group's friendly URL.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  friendlyURL the group's new friendlyURL (optionally
+	 *         <code>null</code>)
+	 * @return the group
+	 * @throws PortalException if a group with the primary key could not be
+	 *         found or if a valid friendly URL could not be created for the
+	 *         group
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group updateFriendlyURL(long groupId, String friendlyURL)
 		throws PortalException, SystemException {
 
@@ -1039,6 +1756,17 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return group;
 	}
 
+	/**
+	 * Updates the group's type settings.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  typeSettings the group's new type settings (optionally
+	 *         <code>null</code>)
+	 * @return the group
+	 * @throws PortalException if a group with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group updateGroup(long groupId, String typeSettings)
 		throws PortalException, SystemException {
 
@@ -1051,6 +1779,27 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return group;
 	}
 
+	/**
+	 * Updates the group.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  name the group's new name
+	 * @param  description the group's new description (optionally
+	 *         <code>null</code>)
+	 * @param  type the group's new type. For more information see {@link
+	 *         com.liferay.portal.model.GroupConstants}
+	 * @param  friendlyURL the group's new friendlyURL (optionally
+	 *         <code>null</code>)
+	 * @param  active whether the group is active
+	 * @param  serviceContext the service context to be applied (optionally
+	 *         <code>null</code>). Can specify the group's replacement asset
+	 *         category IDs and replacement asset tag names
+	 * @return the group
+	 * @throws PortalException if a group with the primary key could not be
+	 *         found or if the friendly URL was invalid or could one not be
+	 *         created
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group updateGroup(
 			long groupId, String name, String description, int type,
 			String friendlyURL, boolean active, ServiceContext serviceContext)
@@ -1119,6 +1868,16 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return group;
 	}
 
+	/**
+	 * Associates the group with a main site if the group is an organization.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  site whether the group is to be associated with a main site
+	 * @return the group
+	 * @throws PortalException if a group with the primary key could not be
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
 	public Group updateSite(long groupId, boolean site)
 		throws PortalException, SystemException {
 
