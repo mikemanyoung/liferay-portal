@@ -28,14 +28,12 @@
 	<sql id="com.liferay.portlet.documentlibrary.service.persistence.DLFileEntryFinder.countByG_F_S">
 		<![CDATA[
 			SELECT
-				COUNT(DISTINCT DLFileEntry.fileEntryId) AS COUNT_VALUE
+				COUNT(DISTINCT DLFileVersion.fileEntryId) AS COUNT_VALUE
 			FROM
-				DLFileEntry
-			INNER JOIN
-				DLFileVersion ON
-					(DLFileVersion.fileEntryId = DLFileEntry.fileEntryId)
+				DLFileVersion
+			[$JOIN$]
 			WHERE
-				(DLFileEntry.groupId = ?) AND
+				(DLFileVersion.groupId = ?) AND
 				(DLFileVersion.status = ?) AND
 				[$FOLDER_ID$]
 		]]>
@@ -169,14 +167,12 @@
 	<sql id="com.liferay.portlet.documentlibrary.service.persistence.DLFolderFinder.countFE_ByG_F_S">
 		<![CDATA[
 			SELECT
-				COUNT(DISTINCT DLFileEntry.fileEntryId) AS COUNT_VALUE
+				COUNT(DISTINCT DLFileVersion.fileEntryId) AS COUNT_VALUE
 			FROM
-				DLFileEntry
-			INNER JOIN
-				DLFileVersion ON
-					(DLFileVersion.fileEntryId = DLFileEntry.fileEntryId)
+				DLFileVersion
+			[$JOIN$]
 			WHERE
-				(DLFileEntry.groupId = ?) AND
+				(DLFileVersion.groupId = ?) AND
 				(DLFileVersion.status = ?) AND
 				[$FILE_ENTRY_FOLDER_ID$]
 		]]>
@@ -187,9 +183,7 @@
 				COUNT(DISTINCT fileShortcutId) AS COUNT_VALUE
 			FROM
 				DLFileShortcut
-			INNER JOIN
-				DLFileEntry ON
-					(DLFileEntry.fileEntryId = DLFileShortcut.toFileEntryId)
+			[$JOIN$]
 			WHERE
 				(DLFileShortcut.groupId = ?) AND
 				(DLFileShortcut.status = 0) AND
@@ -247,6 +241,20 @@
 				(DLFileShortcut.groupId = ?) AND
 				(DLFileShortcut.status = 0) AND
 				[$FILE_SHORTCUT_FOLDER_ID$]
+		]]>
+	</sql>
+	<sql id="com.liferay.portlet.documentlibrary.service.persistence.DLFolderFinder.joinFS_ByDLFileEntry">
+		<![CDATA[
+			INNER JOIN
+				DLFileEntry ON
+					(DLFileEntry.fileEntryId = DLFileShortcut.toFileEntryId)
+		]]>
+	</sql>
+	<sql id="com.liferay.portlet.documentlibrary.service.persistence.DLFolderFinder.joinFV_ByDLFileEntry">
+		<![CDATA[
+			INNER JOIN
+				DLFileEntry ON
+					(DLFileEntry.fileEntryId = DLFileVersion.fileEntryId)
 		]]>
 	</sql>
 </custom-sql>

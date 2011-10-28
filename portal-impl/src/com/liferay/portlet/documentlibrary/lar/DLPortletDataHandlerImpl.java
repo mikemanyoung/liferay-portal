@@ -670,8 +670,12 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		long fileEntryTypeId = dlFileEntry.getFileEntryTypeId();
 
 		DLFileEntryType dlFileEntryType =
-			DLFileEntryTypeLocalServiceUtil.getDLFileEntryType(
+			DLFileEntryTypeLocalServiceUtil.fetchFileEntryType(
 				fileEntryTypeId);
+
+		if (dlFileEntryType == null) {
+			return;
+		}
 
 		exportFileEntryType(
 			portletDataContext, fileEntryTypesElement, dlFileEntryType);
@@ -1230,8 +1234,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		}
 
 		DLFileEntryTypeLocalServiceUtil.updateFolderFileEntryTypes(
-			(DLFolder)folder, fileEntryTypeIds, defaultFileEntryTypeId,
-			serviceContext);
+			(DLFolder)folder.getModel(), fileEntryTypeIds,
+			defaultFileEntryTypeId, serviceContext);
 	}
 
 	protected static void importMetaData(

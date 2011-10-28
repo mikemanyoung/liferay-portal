@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
@@ -35,7 +36,10 @@ import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeServiceUtil;
 import com.liferay.portlet.documentlibrary.service.permission.DLFileEntryPermission;
+import com.liferay.portlet.documentlibrary.service.permission.DLFileEntryTypePermission;
 import com.liferay.portlet.documentlibrary.service.permission.DLPermission;
+
+import java.io.Serializable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -118,6 +122,18 @@ public class DLFileEntryAssetRendererFactory extends BaseAssetRendererFactory {
 		if (!DLPermission.contains(
 				themeDisplay.getPermissionChecker(),
 				themeDisplay.getScopeGroupId(), ActionKeys.ADD_DOCUMENT)) {
+
+			return null;
+		}
+
+		long classTypeId = GetterUtil.getLong(
+			(Serializable)liferayPortletRequest.getAttribute(
+				WebKeys.ASSET_RENDERER_FACTORY_CLASS_TYPE_ID));
+
+		if ((classTypeId > 0) &&
+			!DLFileEntryTypePermission.contains(
+				themeDisplay.getPermissionChecker(), classTypeId,
+				ActionKeys.VIEW)) {
 
 			return null;
 		}

@@ -115,7 +115,7 @@ public class DLFileEntryTypeFinderImpl
 			qPos.add(names, 2);
 			qPos.add(descriptions, 2);
 
-			Iterator<Long> itr = q.list().iterator();
+			Iterator<Long> itr = q.iterate();
 
 			if (itr.hasNext()) {
 				Long count = itr.next();
@@ -167,7 +167,7 @@ public class DLFileEntryTypeFinderImpl
 		String[] descriptions = CustomSQLUtil.keywords(description, false);
 
 		return findByC_G_N_D_S(
-			companyId, groupId,	names, descriptions, andOperator, start, end,
+			companyId, groupId, names, descriptions, andOperator, start, end,
 			orderByComparator);
 	}
 

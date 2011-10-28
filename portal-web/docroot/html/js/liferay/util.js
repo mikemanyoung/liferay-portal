@@ -350,11 +350,13 @@
 					if (!parentThemeDisplay) {
 						break;
 					}
-					else if (!parentThemeDisplay.isStatePopUp()) {
+					else if (!parentThemeDisplay.isStatePopUp() || (parentWindow == parentWindow.parent)) {
 						topWindow = parentWindow;
 
 						break;
 					}
+
+					parentWindow = parentWindow.parent;
 				}
 
 				if (!topWindow) {
@@ -1085,6 +1087,8 @@
 
 			ddmURL.setEscapeXML(false);
 
+            ddmURL.setDoAsGroupId(config.doAsGroupId || themeDisplay.getScopeGroupId());
+
 			ddmURL.setParameter('chooseCallback', config.chooseCallback);
 			ddmURL.setParameter('saveCallback', config.saveCallback);
 			ddmURL.setParameter('scopeAvailableFields', config.availableFields);
@@ -1094,11 +1098,15 @@
 			ddmURL.setParameter('scopeTemplateMode', config.templateMode);
 			ddmURL.setParameter('scopeTemplateType', config.templateType);
 
-			if (config.showManageTemplates) {
+			if ('showGlobalScope' in config) {
+				ddmURL.setParameter('showGlobalScope', config.showGlobalScope);
+			}
+
+			if ('showManageTemplates' in config) {
 				ddmURL.setParameter('showManageTemplates', config.showManageTemplates);
 			}
 
-			if (config.showToolbar) {
+			if ('showToolbar' in config) {
 				ddmURL.setParameter('showToolbar', config.showToolbar);
 			}
 

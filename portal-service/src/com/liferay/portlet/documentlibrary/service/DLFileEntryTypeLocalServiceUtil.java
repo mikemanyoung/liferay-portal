@@ -158,6 +158,12 @@ public class DLFileEntryTypeLocalServiceUtil {
 		return getService().dynamicQueryCount(dynamicQuery);
 	}
 
+	public static com.liferay.portlet.documentlibrary.model.DLFileEntryType fetchDLFileEntryType(
+		long fileEntryTypeId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().fetchDLFileEntryType(fileEntryTypeId);
+	}
+
 	/**
 	* Returns the document library file entry type with the primary key.
 	*
@@ -298,6 +304,12 @@ public class DLFileEntryTypeLocalServiceUtil {
 	public static void deleteFileEntryTypes(long folderId)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		getService().deleteFileEntryTypes(folderId);
+	}
+
+	public static com.liferay.portlet.documentlibrary.model.DLFileEntryType fetchFileEntryType(
+		long fileEntryTypeId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().fetchFileEntryType(fileEntryTypeId);
 	}
 
 	public static long getDefaultFileEntryTypeId(long folderId)
