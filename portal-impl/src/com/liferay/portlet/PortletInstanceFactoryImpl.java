@@ -81,7 +81,7 @@ public class PortletInstanceFactoryImpl implements PortletInstanceFactory {
 
 		boolean instanceable = false;
 
-		if ((portlet.isInstanceable()) &&
+		if (portlet.isInstanceable() &&
 			(PortletConstants.getInstanceId(portlet.getPortletId()) != null)) {
 
 			instanceable = true;
@@ -180,6 +180,17 @@ public class PortletInstanceFactoryImpl implements PortletInstanceFactory {
 		}
 
 		return instanceInvokerPortletInstance;
+	}
+
+	public void delete(Portlet portlet) {
+		if (PortletConstants.getInstanceId(portlet.getPortletId()) != null) {
+			Map<String, InvokerPortlet> portletInstances = _pool.get(
+				portlet.getRootPortletId());
+
+			if (portletInstances != null) {
+				portletInstances.remove(portlet.getPortletId());
+			}
+		}
 	}
 
 	public void destroy() {

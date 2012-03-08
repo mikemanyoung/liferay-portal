@@ -435,7 +435,7 @@ public class DLUtil {
 
 		String previewURL = sb.toString();
 
-		if ((themeDisplay != null) && (themeDisplay.isAddSessionIdToURL())) {
+		if ((themeDisplay != null) && themeDisplay.isAddSessionIdToURL()) {
 			return PortalUtil.getURLWithSessionId(
 				previewURL, themeDisplay.getSessionId());
 		}
@@ -565,6 +565,10 @@ public class DLUtil {
 		String title = fileEntry.getTitle();
 		String extension = fileEntry.getExtension();
 
+		return getTitleWithExtension(title, extension);
+	}
+
+	public static String getTitleWithExtension(String title, String extension) {
 		if (Validator.isNotNull(extension)) {
 			String periodAndExtension = StringPool.PERIOD + extension;
 
