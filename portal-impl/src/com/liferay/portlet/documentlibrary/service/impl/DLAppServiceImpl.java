@@ -42,6 +42,7 @@ import com.liferay.portal.repository.liferayrepository.LiferayRepository;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
+import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileShortcut;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.base.DLAppServiceBaseImpl;
@@ -51,6 +52,8 @@ import com.liferay.portlet.documentlibrary.service.permission.DLFolderPermission
 import com.liferay.portlet.documentlibrary.util.DLAppUtil;
 import com.liferay.portlet.documentlibrary.util.DLProcessorRegistryUtil;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelModifiedDateComparator;
+import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.expando.util.ExpandoBridgeFactoryUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -538,6 +541,13 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 		FileVersion oldFileVersion = oldFileEntry.getFileVersion();
 
+		ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(
+			serviceContext.getCompanyId(), DLFileEntry.class.getName(),
+			oldFileVersion.getFileVersionId());
+
+		serviceContext.setExpandoBridgeAttributes(
+			expandoBridge.getAttributes());
+
 		FileEntry fileEntry = repository.checkOutFileEntry(
 			fileEntryId, serviceContext);
 
@@ -584,6 +594,13 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		FileEntry oldFileEntry = repository.getFileEntry(fileEntryId);
 
 		FileVersion oldFileVersion = oldFileEntry.getFileVersion();
+
+		ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(
+			serviceContext.getCompanyId(), DLFileEntry.class.getName(),
+			oldFileVersion.getFileVersionId());
+
+		serviceContext.setExpandoBridgeAttributes(
+			expandoBridge.getAttributes());
 
 		FileEntry fileEntry = repository.checkOutFileEntry(
 			fileEntryId, owner, expirationTime, serviceContext);
