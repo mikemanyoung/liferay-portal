@@ -16,17 +16,23 @@ package com.liferay.portlet.documentlibrary.service.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.security.permission.ActionKeys;
+import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.service.base.DLFileEntryTypeServiceBaseImpl;
 import com.liferay.portlet.documentlibrary.service.permission.DLFileEntryTypePermission;
 import com.liferay.portlet.documentlibrary.service.permission.DLPermission;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Provides the remote service for accessing, adding, deleting, and updating
+ * file and folder file entry types. Its methods include permission checks.
+ *
  * @author Alexander Chow
  */
 public class DLFileEntryTypeServiceImpl extends DLFileEntryTypeServiceBaseImpl {
@@ -72,6 +78,15 @@ public class DLFileEntryTypeServiceImpl extends DLFileEntryTypeServiceBaseImpl {
 		return dlFileEntryTypePersistence.filterCountByGroupId(groupIds);
 	}
 
+	public List<DLFileEntryType> getFolderFileEntryTypes(
+			long[] groupIds, long folderId, boolean inherited)
+		throws PortalException, SystemException {
+
+		return filterFileEntryTypes(
+			dlFileEntryTypeLocalService.getFolderFileEntryTypes(
+				groupIds, folderId, inherited));
+	}
+
 	public List<DLFileEntryType> search(
 			long companyId, long[] groupIds, String keywords,
 			boolean includeBasicFileEntryType, int start, int end,
@@ -103,6 +118,30 @@ public class DLFileEntryTypeServiceImpl extends DLFileEntryTypeServiceBaseImpl {
 		dlFileEntryTypeLocalService.updateFileEntryType(
 			getUserId(), fileEntryTypeId, name, description, ddmStructureIds,
 			serviceContext);
+	}
+
+	protected List<DLFileEntryType> filterFileEntryTypes(
+			List<DLFileEntryType> fileEntryTypes)
+		throws PortalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		fileEntryTypes = ListUtil.copy(fileEntryTypes);
+
+		Iterator<DLFileEntryType> itr = fileEntryTypes.iterator();
+
+		while (itr.hasNext()) {
+			DLFileEntryType fileEntryType = itr.next();
+
+			if ((fileEntryType.getFileEntryTypeId() > 0) &&
+				!DLFileEntryTypePermission.contains(
+					permissionChecker, fileEntryType, ActionKeys.VIEW)) {
+
+				itr.remove();
+			}
+		}
+
+		return fileEntryTypes;
 	}
 
 }

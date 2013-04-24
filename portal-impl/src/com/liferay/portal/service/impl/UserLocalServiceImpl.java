@@ -26,6 +26,7 @@ import com.liferay.portal.GroupFriendlyURLException;
 import com.liferay.portal.ModelListenerException;
 import com.liferay.portal.NoSuchContactException;
 import com.liferay.portal.NoSuchGroupException;
+import com.liferay.portal.NoSuchImageException;
 import com.liferay.portal.NoSuchOrganizationException;
 import com.liferay.portal.NoSuchRoleException;
 import com.liferay.portal.NoSuchTicketException;
@@ -155,7 +156,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The implementation of the user local service.
+ * Provides the local service for accessing, adding, authenticating, deleting,
+ * and updating users.
  *
  * @author Brian Wing Shun Chan
  * @author Scott Lee
@@ -952,9 +954,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		workflowServiceContext.setAttribute("autoPassword", autoPassword);
 		workflowServiceContext.setAttribute("sendEmail", sendEmail);
 
-		WorkflowHandlerRegistryUtil.startWorkflowInstance(
-			companyId, workflowUserId, User.class.getName(), userId, user,
-			workflowServiceContext);
+		startWorkflowInstance(
+			companyId, workflowUserId, userId, user, workflowServiceContext);
 
 		if (serviceContext != null) {
 			String passwordUnencrypted = (String)serviceContext.getAttribute(
@@ -1164,7 +1165,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				userPassword = PasswordEncryptorUtil.encrypt(userPassword);
 			}
 
-			String encPassword = PasswordEncryptorUtil.encrypt(password);
+			String encPassword = PasswordEncryptorUtil.encrypt(
+				password, userPassword);
 
 			if (userPassword.equals(password) ||
 				userPassword.equals(encPassword)) {
@@ -1314,32 +1316,33 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				return false;
 			}
 
-			String password = user.getPassword();
+			String userPassword = user.getPassword();
 
 			if (user.isPasswordEncrypted()) {
-				if (password.equals(encPassword)) {
+				if (userPassword.equals(encPassword)) {
 					return true;
 				}
 
 				if (!PropsValues.PORTAL_JAAS_STRICT_PASSWORD) {
 					encPassword = PasswordEncryptorUtil.encrypt(
-						encPassword, password);
+						encPassword, userPassword);
 
-					if (password.equals(encPassword)) {
+					if (userPassword.equals(encPassword)) {
 						return true;
 					}
 				}
 			}
 			else {
 				if (!PropsValues.PORTAL_JAAS_STRICT_PASSWORD) {
-					if (password.equals(encPassword)) {
+					if (userPassword.equals(encPassword)) {
 						return true;
 					}
 				}
 
-				password = PasswordEncryptorUtil.encrypt(password);
+				userPassword = PasswordEncryptorUtil.encrypt(
+					userPassword, encPassword);
 
-				if (password.equals(encPassword)) {
+				if (userPassword.equals(encPassword)) {
 					return true;
 				}
 			}
@@ -1683,9 +1686,11 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			throw new SystemException(ee);
 		}
 
-		String encPassword = PasswordEncryptorUtil.encrypt(password);
+		String userPassword = user.getPassword();
+		String encPassword = PasswordEncryptorUtil.encrypt(
+			password, userPassword);
 
-		if (user.getPassword().equals(encPassword)) {
+		if (userPassword.equals(encPassword)) {
 			if (isPasswordExpired(user)) {
 				user.setPasswordReset(true);
 
@@ -1790,7 +1795,14 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// Portrait
 
-		imageLocalService.deleteImage(user.getPortraitId());
+		try {
+			imageLocalService.deleteImage(user.getPortraitId());
+		}
+		catch (NoSuchImageException e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to delete image " + user.getPortraitId());
+			}
+		}
 
 		// Password policy relation
 
@@ -4551,6 +4563,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		User user = userPersistence.findByPrimaryKey(userId);
 
+		if ((status == WorkflowConstants.STATUS_APPROVED) &&
+			(user.getStatus() != WorkflowConstants.STATUS_APPROVED)) {
+
+			validateCompanyMaxUsers(user.getCompanyId());
+		}
+
 		user.setStatus(status);
 
 		userPersistence.update(user);
@@ -5152,8 +5170,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// Authenticate against the User_ table
 
-		if ((authResult == Authenticator.SUCCESS) &&
-			PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK) {
+		boolean skipLiferayCheck = false;
+
+		if (authResult == Authenticator.SKIP_LIFERAY_CHECK) {
+			authResult = Authenticator.SUCCESS;
+
+			skipLiferayCheck = true;
+		}
+		else if ((authResult == Authenticator.SUCCESS) &&
+				 PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK) {
 
 			boolean authenticated = PwdAuthenticator.authenticate(
 				login, password, user.getPassword());
@@ -5193,15 +5218,10 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 			// Update digest
 
-			boolean updateDigest = true;
+			if (skipLiferayCheck ||
+				!PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK ||
+				Validator.isNull(user.getDigest())) {
 
-			if (PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK) {
-				if (Validator.isNotNull(user.getDigest())) {
-					updateDigest = false;
-				}
-			}
-
-			if (updateDigest) {
 				String digest = user.getDigest(password);
 
 				user.setDigest(digest);
@@ -5494,6 +5514,26 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		user.setDigest(StringPool.BLANK);
 	}
 
+	protected void startWorkflowInstance(
+		final long companyId, final long workflowUserId, final long userId,
+		final User user, final ServiceContext workflowServiceContext) {
+
+		Callable<Void> callable = new PortalCallable<Void>(companyId) {
+
+			@Override
+			protected Void doCall() throws Exception {
+				WorkflowHandlerRegistryUtil.startWorkflowInstance(
+					companyId, workflowUserId, User.class.getName(), userId,
+					user, workflowServiceContext);
+
+				return null;
+			}
+
+		};
+
+		TransactionCommitCallbackRegistryUtil.registerCallback(callable);
+	}
+
 	protected void updateGroups(
 			long userId, long[] newGroupIds, ServiceContext serviceContext,
 			boolean indexingEnabled)
@@ -5641,20 +5681,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			String middleName, String lastName, long[] organizationIds)
 		throws PortalException, SystemException {
 
-		Company company = companyPersistence.findByPrimaryKey(companyId);
-
-		if (company.isSystem()) {
-			return;
-		}
-
-		if ((company.getMaxUsers() > 0) &&
-			(company.getMaxUsers() <=
-				searchCount(
-					companyId, null, WorkflowConstants.STATUS_APPROVED,
-					null))) {
-
-			throw new CompanyMaxUsersException();
-		}
+		validateCompanyMaxUsers(companyId);
 
 		if (!autoScreenName) {
 			validateScreenName(companyId, userId, screenName);
@@ -5726,6 +5753,23 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		if (Validator.isNotNull(smsSn) && !Validator.isEmailAddress(smsSn)) {
 			throw new UserSmsException();
+		}
+	}
+
+	protected void validateCompanyMaxUsers(long companyId)
+		throws PortalException, SystemException {
+
+		Company company = companyPersistence.findByPrimaryKey(companyId);
+
+		if (company.isSystem() || (company.getMaxUsers() == 0)) {
+			return;
+		}
+
+		int userCount = searchCount(
+			companyId, null, WorkflowConstants.STATUS_APPROVED, null);
+
+		if (userCount > company.getMaxUsers()) {
+			throw new CompanyMaxUsersException();
 		}
 	}
 

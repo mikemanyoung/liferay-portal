@@ -553,6 +553,12 @@ public class AssetEntryLocalServiceWrapper implements AssetEntryLocalService,
 		return _assetEntryLocalService.fetchEntry(entryId);
 	}
 
+	public com.liferay.portlet.asset.model.AssetEntry fetchEntry(long groupId,
+		java.lang.String classUuid)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _assetEntryLocalService.fetchEntry(groupId, classUuid);
+	}
+
 	public com.liferay.portlet.asset.model.AssetEntry fetchEntry(
 		java.lang.String className, long classPK)
 		throws com.liferay.portal.kernel.exception.SystemException {
@@ -648,6 +654,14 @@ public class AssetEntryLocalServiceWrapper implements AssetEntryLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _assetEntryLocalService.getTopViewedEntries(className, asc,
 			start, end);
+	}
+
+	public com.liferay.portlet.asset.model.AssetEntry incrementViewCounter(
+		long userId, java.lang.String className, long classPK)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _assetEntryLocalService.incrementViewCounter(userId, className,
+			classPK);
 	}
 
 	public com.liferay.portlet.asset.model.AssetEntry incrementViewCounter(

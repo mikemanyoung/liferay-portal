@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.ScopeFacet;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -56,6 +57,7 @@ import com.liferay.portlet.bookmarks.model.BookmarksEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.messageboards.model.MBMessage;
+import com.liferay.portlet.social.model.SocialActivityConstants;
 import com.liferay.portlet.wiki.model.WikiPage;
 
 import java.util.ArrayList;
@@ -63,6 +65,9 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * Provides the local service for accessing, deleting, updating, and validating
+ * asset entries.
+ *
  * @author Brian Wing Shun Chan
  * @author Bruno Farache
  * @author Zsolt Berentey
@@ -120,6 +125,12 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 	public AssetEntry fetchEntry(long entryId) throws SystemException {
 		return assetEntryPersistence.fetchByPrimaryKey(entryId);
+	}
+
+	public AssetEntry fetchEntry(long groupId, String classUuid)
+		throws SystemException {
+
+		return assetEntryPersistence.fetchByG_CU(groupId, classUuid);
 	}
 
 	public AssetEntry fetchEntry(String className, long classPK)
@@ -311,6 +322,26 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		entryQuery.setStart(start);
 
 		return assetEntryFinder.findEntries(entryQuery);
+	}
+
+	public AssetEntry incrementViewCounter(
+			long userId, String className, long classPK)
+		throws PortalException, SystemException {
+
+		User user = userPersistence.findByPrimaryKey(userId);
+
+		assetEntryLocalService.incrementViewCounter(
+			user.getUserId(), className, classPK, 1);
+
+		AssetEntry assetEntry = getEntry(className, classPK);
+
+		if (!user.isDefaultUser()) {
+			socialActivityLocalService.addActivity(
+				user.getUserId(), assetEntry.getGroupId(), className, classPK,
+				SocialActivityConstants.TYPE_VIEW, StringPool.BLANK, 0);
+		}
+
+		return assetEntry;
 	}
 
 	@BufferedIncrement(

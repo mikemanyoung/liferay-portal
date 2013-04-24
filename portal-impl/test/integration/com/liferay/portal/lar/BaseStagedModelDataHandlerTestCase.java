@@ -15,10 +15,10 @@
 package com.liferay.portal.lar;
 
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
+import com.liferay.portal.kernel.lar.ExportImportPathUtil;
 import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelPathUtil;
 import com.liferay.portal.kernel.lar.UserIdStrategy;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -118,7 +118,8 @@ public abstract class BaseStagedModelDataHandlerTestCase extends PowerMockito {
 
 		// Reread the staged model for import from ZIP for true testing
 
-		String stagedModelPath = StagedModelPathUtil.getPath(stagedModel);
+		String stagedModelPath = getStagedModelPath(
+			stagingGroup.getGroupId(), stagedModel);
 
 		StagedModel exportedStagedModel =
 			(StagedModel)portletDataContext.getZipEntryAsObject(
@@ -136,12 +137,17 @@ public abstract class BaseStagedModelDataHandlerTestCase extends PowerMockito {
 		Map<String, List<StagedModel>> dependentStagedModelsMap, Class<?> clazz,
 		StagedModel dependentStagedModel) {
 
-		List<StagedModel> dependentStagedModels = new ArrayList<StagedModel>();
+		List<StagedModel> dependentStagedModels = dependentStagedModelsMap.get(
+			clazz.getSimpleName());
+
+		if (dependentStagedModels == null) {
+			dependentStagedModels = new ArrayList<StagedModel>();
+
+			dependentStagedModelsMap.put(
+				clazz.getSimpleName(), dependentStagedModels);
+		}
 
 		dependentStagedModels.add(dependentStagedModel);
-
-		dependentStagedModelsMap.put(
-			clazz.getSimpleName(), dependentStagedModels);
 
 		return dependentStagedModels;
 	}
@@ -186,6 +192,10 @@ public abstract class BaseStagedModelDataHandlerTestCase extends PowerMockito {
 	protected abstract StagedModel getStagedModel(String uuid, Group group);
 
 	protected abstract Class<? extends StagedModel> getStagedModelClass();
+
+	protected String getStagedModelPath(long groupId, StagedModel stagedModel) {
+		return ExportImportPathUtil.getModelPath(stagedModel);
+	}
 
 	protected Date getStartDate() {
 		return new Date(System.currentTimeMillis() - Time.HOUR);
@@ -235,8 +245,8 @@ public abstract class BaseStagedModelDataHandlerTestCase extends PowerMockito {
 				while (iterator.hasNext()) {
 					StagedModel dependentStagedModel = iterator.next();
 
-					String dependentStagedModelPath =
-						StagedModelPathUtil.getPath(dependentStagedModel);
+					String dependentStagedModelPath = getStagedModelPath(
+						stagingGroup.getGroupId(), dependentStagedModel);
 
 					if (path.equals(dependentStagedModelPath)) {
 						iterator.remove();
