@@ -83,14 +83,11 @@ import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryTypeConstants;
 import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
-import com.liferay.portlet.documentlibrary.model.DLSync;
-import com.liferay.portlet.documentlibrary.model.DLSyncConstants;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryTypeImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileVersionImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFolderImpl;
-import com.liferay.portlet.documentlibrary.model.impl.DLSyncImpl;
 import com.liferay.portlet.documentlibrary.social.DLActivityKeys;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecord;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecordConstants;
@@ -160,15 +157,16 @@ public class DataFactory {
 
 	public DataFactory(
 			String baseDir, int maxAssetCategoryCount, int maxBlogsEntryCount,
-			int maxGroupsCount, int maxJournalArticleCount,
-			int maxJournalArticleSize, int maxMBCategoryCount,
-			int maxMBThreadCount, int maxMBMessageCount,
+			int maxDDLCustomFieldCount, int maxGroupsCount,
+			int maxJournalArticleCount, int maxJournalArticleSize,
+			int maxMBCategoryCount, int maxMBThreadCount, int maxMBMessageCount,
 			int maxUserToGroupCount)
 		throws Exception {
 
 		_baseDir = baseDir;
 		_maxAssetCategoryCount = maxAssetCategoryCount;
 		_maxBlogsEntryCount = maxBlogsEntryCount;
+		_maxDDLCustomFieldCount = maxDDLCustomFieldCount;
 		_maxGroupsCount = maxGroupsCount;
 		_maxJournalArticleCount = maxJournalArticleCount;
 		_maxMBCategoryCount = maxMBCategoryCount;
@@ -212,10 +210,6 @@ public class DataFactory {
 				new File(
 					_baseDir,
 					_DEPENDENCIES_DIR + "ddm_structure_basic_document.xml")));
-		_ddlDDMStructureContent = StringUtil.read(
-			new FileInputStream(
-				new File(
-					_baseDir, _DEPENDENCIES_DIR + "ddm_structure_ddl.xml")));
 
 		initAssetCateogries();
 		initCompany();
@@ -782,9 +776,34 @@ public class DataFactory {
 	}
 
 	public DDMStructure newDDLDDMStructure(long groupId) {
+		StringBundler sb = new StringBundler(3 + _maxDDLCustomFieldCount * 10);
+
+		sb.append("<?xml version=\"1.0\"?>");
+		sb.append(
+			"<root available-locales=\"en_US\" default-locale=\"en_US\">");
+
+		for (int i = 0; i < _maxDDLCustomFieldCount; i++) {
+			sb.append(
+				"<dynamic-element dataType=\"string\" indexType=\"keyword\"");
+			sb.append(" name=\"");
+			sb.append(nextDDLCustomFieldName(groupId, i));
+			sb.append(
+				"\" readOnly=\"false\" repeatable=\"false\" required=\"false");
+			sb.append(
+				"\" showLabel=\"true\" type=\"text\" width=\"25\"><meta-data");
+			sb.append(" locale=\"en_US\"><entry name=\"label\"><![CDATA[Text");
+			sb.append(i);
+			sb.append(
+				"]]></entry><entry name=\"predefinedValue\"><![CDATA[]]>");
+			sb.append("</entry><entry name=\"tip\"><![CDATA[]]></entry>");
+			sb.append("</meta-data></dynamic-element>");
+		}
+
+		sb.append("</root>");
+
 		return newDDMStructure(
 			groupId, _classNamesMap.get(DDLRecordSet.class.getName()),
-			"Test DDM Structure", _ddlDDMStructureContent);
+			"Test DDM Structure", sb.toString());
 	}
 
 	public DDLRecord newDDLRecord(DDLRecordSet ddlRecordSet) {
@@ -862,12 +881,20 @@ public class DataFactory {
 	}
 
 	public DDMContent newDDMContent(DDLRecord ddlRecord, int currentIndex) {
-		StringBundler sb = new StringBundler(4);
+		StringBundler sb = new StringBundler(2 + _maxDDLCustomFieldCount * 6);
 
-		sb.append("<?xml version=\"1.0\"?><root><dynamic-element ");
-		sb.append("name=\"text2102\"><dynamic-content><![CDATA[Test Record ");
-		sb.append(currentIndex);
-		sb.append("]]></dynamic-content></dynamic-element></root>");
+		sb.append("<?xml version=\"1.0\"?><root>");
+
+		for (int i = 0; i < _maxDDLCustomFieldCount; i++) {
+			sb.append("<dynamic-element default-language-id=\"en_US\" name=\"");
+			sb.append(nextDDLCustomFieldName(ddlRecord.getGroupId(), i));
+			sb.append("\"><dynamic-content language-id=\"en_US\">");
+			sb.append("<![CDATA[Test Record ");
+			sb.append(currentIndex);
+			sb.append("]]></dynamic-content></dynamic-element>");
+		}
+
+		sb.append("</root>");
 
 		return newDDMContent(
 			ddlRecord.getDDMStorageId(), ddlRecord.getGroupId(), sb.toString());
@@ -1005,20 +1032,6 @@ public class DataFactory {
 		dlFolder.setStatusDate(nextFutureDate());
 
 		return dlFolder;
-	}
-
-	public DLSync newDLSync(DLFileEntry dlFileEntry) {
-		return newDLSync(
-			dlFileEntry.getFileEntryId(), dlFileEntry.getUuid(),
-			dlFileEntry.getRepositoryId(), dlFileEntry.getFolderId(),
-			dlFileEntry.getName(), DLSyncConstants.TYPE_FILE);
-	}
-
-	public DLSync newDLSync(DLFolder dLFolder) {
-		return newDLSync(
-			dLFolder.getFolderId(), dLFolder.getUuid(),
-			dLFolder.getRepositoryId(), dLFolder.getParentFolderId(),
-			dLFolder.getName(), DLSyncConstants.TYPE_FOLDER);
 	}
 
 	public Group newGroup(User user) throws Exception {
@@ -1648,27 +1661,6 @@ public class DataFactory {
 		return ddmStructureLink;
 	}
 
-	protected DLSync newDLSync(
-		long fileId, String fileUuid, long repositoryId, long parentFolderId,
-		String name, String type) {
-
-		DLSync dlSync = new DLSyncImpl();
-
-		dlSync.setSyncId(_counter.get());
-		dlSync.setCompanyId(_companyId);
-		dlSync.setCreateDate(nextFutureDate().getTime());
-		dlSync.setModifiedDate(nextFutureDate().getTime());
-		dlSync.setFileId(fileId);
-		dlSync.setFileUuid(fileUuid);
-		dlSync.setRepositoryId(repositoryId);
-		dlSync.setParentFolderId(parentFolderId);
-		dlSync.setName(name);
-		dlSync.setEvent(DLSyncConstants.EVENT_ADD);
-		dlSync.setType(type);
-
-		return dlSync;
-	}
-
 	protected Group newGroup(
 			long groupId, long classNameId, long classPK, String name,
 			boolean site)
@@ -1891,6 +1883,19 @@ public class DataFactory {
 		return user;
 	}
 
+	protected String nextDDLCustomFieldName(
+		long groupId, int customFieldIndex) {
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append("costom_field_text_");
+		sb.append(groupId);
+		sb.append("_");
+		sb.append(customFieldIndex);
+
+		return sb.toString();
+	}
+
 	protected Date nextFutureDate() {
 		return new Date(
 			_FUTURE_TIME + (_futureDateCounter.get() * Time.SECOND));
@@ -1916,7 +1921,6 @@ public class DataFactory {
 	private Company _company;
 	private long _companyId;
 	private SimpleCounter _counter;
-	private String _ddlDDMStructureContent;
 	private DDMStructure _defaultDLDDMStructure;
 	private DLFileEntryType _defaultDLFileEntryType;
 	private User _defaultUser;
@@ -1937,6 +1941,7 @@ public class DataFactory {
 		new HashMap<Long, SimpleCounter>();
 	private int _maxAssetCategoryCount;
 	private int _maxBlogsEntryCount;
+	private int _maxDDLCustomFieldCount;
 	private int _maxDLFileEntrySize;
 	private int _maxGroupsCount;
 	private int _maxJournalArticleCount;

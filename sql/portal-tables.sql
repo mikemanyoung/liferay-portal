@@ -594,9 +594,9 @@ create table DLFileEntryType (
 );
 
 create table DLFileEntryTypes_DDMStructures (
-	fileEntryTypeId LONG not null,
 	structureId LONG not null,
-	primary key (fileEntryTypeId, structureId)
+	fileEntryTypeId LONG not null,
+	primary key (structureId, fileEntryTypeId)
 );
 
 create table DLFileEntryTypes_DLFolders (
@@ -687,22 +687,6 @@ create table DLFolder (
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
 	statusDate DATE null
-);
-
-create table DLSync (
-	syncId LONG not null primary key,
-	companyId LONG,
-	createDate LONG,
-	modifiedDate LONG,
-	fileId LONG,
-	fileUuid VARCHAR(75) null,
-	repositoryId LONG,
-	parentFolderId LONG,
-	name VARCHAR(255) null,
-	description STRING null,
-	event VARCHAR(75) null,
-	type_ VARCHAR(75) null,
-	version VARCHAR(75) null
 );
 
 create table EmailAddress (

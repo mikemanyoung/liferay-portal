@@ -62,10 +62,6 @@
 
 					insert into DLFileVersion values ('${dlFileVersion.uuid}', ${dlFileVersion.fileVersionId}, ${dlFileVersion.groupId}, ${dlFileVersion.companyId}, ${dlFileVersion.userId}, '${dlFileVersion.userName}', '${dataFactory.getDateString(dlFileVersion.createDate)}', '${dataFactory.getDateString(dlFileVersion.modifiedDate)}', ${dlFileVersion.repositoryId}, ${dlFileVersion.folderId}, ${dlFileVersion.fileEntryId}, '${dlFileVersion.extension}', '${dlFileVersion.mimeType}', '${dlFileVersion.title}','${dlFileVersion.description}', '${dlFileVersion.changeLog}', '${dlFileVersion.extraSettings}', ${dlFileVersion.fileEntryTypeId}, '${dlFileVersion.version}', ${dlFileVersion.size}, '${dlFileVersion.checksum}', ${dlFileVersion.status}, ${dlFileVersion.statusByUserId}, '${dlFileVersion.statusByUserName}', ${dlFileVersion.statusDate!'null'});
 
-					<@insertDLSync
-						_entry = dlFileEntry
-					/>
-
 					<@insertAssetEntry
 						_entry = dlFileEntry
 						_currentIndex = dlFolderCount * maxDLFileEntryCount + dlFileEntryCount
@@ -100,7 +96,7 @@
 						_entry = dlFileEntryMetadata
 					/>
 
-					${writerDocumentLibraryCSV.write(dlFolder.folderId + "," + dlFileEntry.name + "," + dlFileEntry.fileEntryId + "," + dataFactory.getDateLong(dlFileEntry.createDate) + "," + dataFactory.getDateLong(dlFolder.createDate) +"\n")}
+					${writerDocumentLibraryCSV.write(dlFolder.folderId + "," + dlFileEntry.name + "," + dlFileEntry.fileEntryId + "," + dataFactory.getDateLong(dlFileEntry.createDate) + "," + dataFactory.getDateLong(dlFolder.createDate) + "\n")}
 				</#list>
 			</#if>
 
@@ -110,20 +106,8 @@
 				_groupId = groupId
 				_parentDLFolderId = dlFolder.folderId
 			/>
-
-			<@insertDLSync
-				_entry = dlFolder
-			/>
 		</#list>
 	</#if>
-</#macro>
-
-<#macro insertDLSync
-	_entry
->
-	<#local dlSync = dataFactory.newDLSync(_entry)>
-
-	insert into DLSync values (${dlSync.syncId}, ${dlSync.companyId}, ${dlSync.createDate}, ${dlSync.modifiedDate}, ${dlSync.fileId}, '${dlSync.fileUuid}', ${dlSync.repositoryId}, ${dlSync.parentFolderId}, '${dlSync.name}', '${dlSync.description}', '${dlSync.event}', '${dlSync.type}', '${dlSync.version}');
 </#macro>
 
 <#macro insertGroup

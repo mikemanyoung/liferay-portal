@@ -38,8 +38,14 @@ public class SecurityManagerUtil {
 			return;
 		}
 
-		_portalSecurityManagerStrategy = PortalSecurityManagerStrategy.parse(
-			PropsValues.PORTAL_SECURITY_MANAGER_STRATEGY);
+		if (PropsValues.TCK_URL) {
+			_portalSecurityManagerStrategy = PortalSecurityManagerStrategy.NONE;
+		}
+		else {
+			_portalSecurityManagerStrategy =
+				PortalSecurityManagerStrategy.parse(
+					PropsValues.PORTAL_SECURITY_MANAGER_STRATEGY);
+		}
 
 		if ((_portalSecurityManagerStrategy ==
 				PortalSecurityManagerStrategy.LIFERAY) ||
@@ -47,22 +53,24 @@ public class SecurityManagerUtil {
 				PortalSecurityManagerStrategy.SMART)) {
 
 			loadPortalSecurityManager();
-		}
 
-		if (_portalSecurityManager == null) {
-			_portalSecurityManagerStrategy =
-				PortalSecurityManagerStrategy.DEFAULT;
+			if (_portalSecurityManager == null) {
+				_portalSecurityManagerStrategy =
+					PortalSecurityManagerStrategy.DEFAULT;
 
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"No portal security manager implementation was located. " +
-						"Continuing with the default security strategy.");
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						"No portal security manager implementation was " +
+							"located. Continuing with the default security " +
+								"strategy.");
+				}
+
+				return;
 			}
-
-			return;
 		}
-		else if (_portalSecurityManagerStrategy ==
-					PortalSecurityManagerStrategy.LIFERAY) {
+
+		if (_portalSecurityManagerStrategy ==
+				PortalSecurityManagerStrategy.LIFERAY) {
 
 			System.setSecurityManager((SecurityManager)_portalSecurityManager);
 		}

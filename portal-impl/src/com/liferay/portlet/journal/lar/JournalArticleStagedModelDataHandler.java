@@ -124,6 +124,19 @@ public class JournalArticleStagedModelDataHandler
 
 			portletDataContext.addReferenceElement(
 				articleElement, ddmStructure);
+
+			long parentStructureId = ddmStructure.getParentStructureId();
+
+			while (parentStructureId > 0) {
+				DDMStructure parentStructure =
+					DDMStructureLocalServiceUtil.getStructure(
+						parentStructureId);
+
+				StagedModelDataHandlerUtil.exportStagedModel(
+					portletDataContext, parentStructure);
+
+				parentStructureId = parentStructure.getParentStructureId();
+			}
 		}
 
 		if (Validator.isNotNull(article.getTemplateId())) {
@@ -665,15 +678,6 @@ public class JournalArticleStagedModelDataHandler
 		if (Validator.isNull(newArticleId)) {
 			articleIds.put(
 				article.getArticleId(), importedArticle.getArticleId());
-		}
-
-		if (!articleId.equals(importedArticle.getArticleId())) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"An article with the ID " + articleId + " already " +
-						"exists. The new generated ID is " +
-							importedArticle.getArticleId());
-			}
 		}
 	}
 
