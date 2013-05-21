@@ -26,6 +26,10 @@ DDLRecordSet selRecordSet = null;
 try {
 	if (Validator.isNotNull(recordSetId)) {
 		selRecordSet = DDLRecordSetLocalServiceUtil.getRecordSet(recordSetId);
+
+		if (selRecordSet.getGroupId() != scopeGroupId) {
+			selRecordSet = null;
+		}
 	}
 }
 catch (NoSuchRecordSetException nsrse) {
@@ -124,8 +128,6 @@ request.setAttribute("record_set_action.jsp-selRecordSet", selRecordSet);
 	</c:if>
 
 	<aui:fieldset label="lists">
-		<br />
-
 		<liferay-ui:search-container
 			searchContainer="<%= new RecordSetSearch(renderRequest, configurationRenderURL) %>"
 		>
@@ -192,7 +194,7 @@ request.setAttribute("record_set_action.jsp-selRecordSet", selRecordSet);
 
 	<aui:fieldset cssClass="hide">
 		<aui:field-wrapper label="portlet-id">
-			<%= portletResource %>
+			<%= HtmlUtil.escape(portletResource) %>
 		</aui:field-wrapper>
 	</aui:fieldset>
 

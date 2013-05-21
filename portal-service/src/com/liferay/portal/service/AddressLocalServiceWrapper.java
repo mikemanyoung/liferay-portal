@@ -15,9 +15,7 @@
 package com.liferay.portal.service;
 
 /**
- * <p>
- * This class is a wrapper for {@link AddressLocalService}.
- * </p>
+ * Provides a wrapper for {@link AddressLocalService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       AddressLocalService
@@ -240,6 +238,11 @@ public class AddressLocalServiceWrapper implements AddressLocalService,
 		_addressLocalService.setBeanIdentifier(beanIdentifier);
 	}
 
+	/**
+	* @deprecated As of 6.2.0, replaced by {@link #addAddress(long, String,
+	long, String, String, String, String, String, long, long,
+	int, boolean, boolean, ServiceContext)}
+	*/
 	public com.liferay.portal.model.Address addAddress(long userId,
 		java.lang.String className, long classPK, java.lang.String street1,
 		java.lang.String street2, java.lang.String street3,
@@ -252,10 +255,30 @@ public class AddressLocalServiceWrapper implements AddressLocalService,
 			mailing, primary);
 	}
 
+	public com.liferay.portal.model.Address addAddress(long userId,
+		java.lang.String className, long classPK, java.lang.String street1,
+		java.lang.String street2, java.lang.String street3,
+		java.lang.String city, java.lang.String zip, long regionId,
+		long countryId, int typeId, boolean mailing, boolean primary,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _addressLocalService.addAddress(userId, className, classPK,
+			street1, street2, street3, city, zip, regionId, countryId, typeId,
+			mailing, primary, serviceContext);
+	}
+
 	public void deleteAddresses(long companyId, java.lang.String className,
 		long classPK)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		_addressLocalService.deleteAddresses(companyId, className, classPK);
+	}
+
+	public com.liferay.portal.model.Address fetchAddressByUuidAndCompanyId(
+		java.lang.String uuid, long companyId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _addressLocalService.fetchAddressByUuidAndCompanyId(uuid,
+			companyId);
 	}
 
 	public java.util.List<com.liferay.portal.model.Address> getAddresses()

@@ -259,8 +259,8 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 					pageContext.getServletContext(), getStartPage())) {
 
 				if (_showExpanded) {
-					jspWriter.write("<ul class=\"dropdown-menu lfr-menu-list");
-					jspWriter.write(" lfr-menu-expanded ");
+					jspWriter.write("<ul class=\"lfr-menu-expanded ");
+					jspWriter.write("lfr-menu-list");
 					jspWriter.print(_cssClass);
 					jspWriter.write("\" id=\"");
 					jspWriter.write(_id);
@@ -310,7 +310,7 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 					if (Validator.isNotNull(_icon)) {
 						jspWriter.write("<img alt=\"\" src=\"");
 						jspWriter.write(_icon);
-						jspWriter.write("\" />");
+						jspWriter.write("\" />&nbsp;");
 					}
 
 					jspWriter.write(message);

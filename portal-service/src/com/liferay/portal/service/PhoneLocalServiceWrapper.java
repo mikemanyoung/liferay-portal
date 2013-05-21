@@ -15,9 +15,7 @@
 package com.liferay.portal.service;
 
 /**
- * <p>
- * This class is a wrapper for {@link PhoneLocalService}.
- * </p>
+ * Provides a wrapper for {@link PhoneLocalService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       PhoneLocalService
@@ -239,6 +237,10 @@ public class PhoneLocalServiceWrapper implements PhoneLocalService,
 		_phoneLocalService.setBeanIdentifier(beanIdentifier);
 	}
 
+	/**
+	* @deprecated As of 6.2.0, replaced by {@link #addPhone(long, String, long,
+	String, String, int, boolean, ServiceContext)}
+	*/
 	public com.liferay.portal.model.Phone addPhone(long userId,
 		java.lang.String className, long classPK, java.lang.String number,
 		java.lang.String extension, int typeId, boolean primary)
@@ -248,10 +250,26 @@ public class PhoneLocalServiceWrapper implements PhoneLocalService,
 			extension, typeId, primary);
 	}
 
+	public com.liferay.portal.model.Phone addPhone(long userId,
+		java.lang.String className, long classPK, java.lang.String number,
+		java.lang.String extension, int typeId, boolean primary,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _phoneLocalService.addPhone(userId, className, classPK, number,
+			extension, typeId, primary, serviceContext);
+	}
+
 	public void deletePhones(long companyId, java.lang.String className,
 		long classPK)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		_phoneLocalService.deletePhones(companyId, className, classPK);
+	}
+
+	public com.liferay.portal.model.Phone fetchPhoneByUuidAndCompanyId(
+		java.lang.String uuid, long companyId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _phoneLocalService.fetchPhoneByUuidAndCompanyId(uuid, companyId);
 	}
 
 	public java.util.List<com.liferay.portal.model.Phone> getPhones()

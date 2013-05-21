@@ -18,11 +18,12 @@ import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
- * The utility for the layout friendly u r l local service. This utility wraps {@link com.liferay.portal.service.impl.LayoutFriendlyURLLocalServiceImpl} and is the primary access point for service operations in application layer code running on the local server.
- *
- * <p>
- * This is a local service. Methods of this service will not have security checks based on the propagated JAAS credentials because this service can only be accessed from within the same VM.
- * </p>
+ * Provides the local service utility for LayoutFriendlyURL. This utility wraps
+ * {@link com.liferay.portal.service.impl.LayoutFriendlyURLLocalServiceImpl} and is the
+ * primary access point for service operations in application layer code running
+ * on the local server. Methods of this service will not have security checks
+ * based on the propagated JAAS credentials because this service can only be
+ * accessed from within the same VM.
  *
  * @author Brian Wing Shun Chan
  * @see LayoutFriendlyURLLocalService
@@ -266,6 +267,62 @@ public class LayoutFriendlyURLLocalServiceUtil {
 	*/
 	public static void setBeanIdentifier(java.lang.String beanIdentifier) {
 		getService().setBeanIdentifier(beanIdentifier);
+	}
+
+	public static com.liferay.portal.model.LayoutFriendlyURL addLayoutFriendlyURL(
+		long companyId, long groupId, long plid, boolean privateLayout,
+		java.lang.String friendlyURL, java.lang.String languageId,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .addLayoutFriendlyURL(companyId, groupId, plid,
+			privateLayout, friendlyURL, languageId, serviceContext);
+	}
+
+	public static java.util.List<com.liferay.portal.model.LayoutFriendlyURL> addLayoutFriendlyURLs(
+		long companyId, long groupId, long plid, boolean privateLayout,
+		java.util.Map<java.util.Locale, java.lang.String> friendlyURLMap,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .addLayoutFriendlyURLs(companyId, groupId, plid,
+			privateLayout, friendlyURLMap, serviceContext);
+	}
+
+	public static void deleteLayoutFriendlyURL(long plid,
+		java.lang.String languageId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteLayoutFriendlyURL(plid, languageId);
+	}
+
+	public static void deleteLayoutFriendlyURLs(long plid)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteLayoutFriendlyURLs(plid);
+	}
+
+	public static java.util.List<com.liferay.portal.model.LayoutFriendlyURL> getLayoutFriendlyURLs(
+		long plid) throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getLayoutFriendlyURLs(plid);
+	}
+
+	public static com.liferay.portal.model.LayoutFriendlyURL updateLayoutFriendlyURL(
+		long companyId, long groupId, long plid, boolean privateLayout,
+		java.lang.String friendlyURL, java.lang.String languageId,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .updateLayoutFriendlyURL(companyId, groupId, plid,
+			privateLayout, friendlyURL, languageId, serviceContext);
+	}
+
+	public static java.util.List<com.liferay.portal.model.LayoutFriendlyURL> updateLayoutFriendlyURLs(
+		long companyId, long groupId, long plid, boolean privateLayout,
+		java.util.Map<java.util.Locale, java.lang.String> friendlyURLMap,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .updateLayoutFriendlyURLs(companyId, groupId, plid,
+			privateLayout, friendlyURLMap, serviceContext);
 	}
 
 	public static LayoutFriendlyURLLocalService getService() {

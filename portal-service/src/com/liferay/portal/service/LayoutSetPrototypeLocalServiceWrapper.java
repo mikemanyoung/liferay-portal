@@ -15,9 +15,7 @@
 package com.liferay.portal.service;
 
 /**
- * <p>
- * This class is a wrapper for {@link LayoutSetPrototypeLocalService}.
- * </p>
+ * Provides a wrapper for {@link LayoutSetPrototypeLocalService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       LayoutSetPrototypeLocalService
@@ -260,6 +258,12 @@ public class LayoutSetPrototypeLocalServiceWrapper
 		return _layoutSetPrototypeLocalService.addLayoutSetPrototype(userId,
 			companyId, nameMap, description, active, layoutsUpdateable,
 			serviceContext);
+	}
+
+	public void deleteNondefaultLayoutSetPrototypes(long companyId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_layoutSetPrototypeLocalService.deleteNondefaultLayoutSetPrototypes(companyId);
 	}
 
 	public com.liferay.portal.model.LayoutSetPrototype fetchLayoutSetPrototypeByUuidAndCompanyId(

@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.staging.permission.StagingPermissionUtil;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutTypePortlet;
@@ -403,7 +403,9 @@ public class PortletPermissionImpl implements PortletPermission {
 		if ((layout != null) && layout.isTypeControlPanel()) {
 			String category = portlet.getControlPanelEntryCategory();
 
-			if (Validator.equals(category, PortletCategoryKeys.CONTENT)) {
+			if (StringUtil.startsWith(
+					category, PortletCategoryKeys.SITE_ADMINISTRATION)) {
+
 				layout = null;
 			}
 		}
@@ -420,6 +422,33 @@ public class PortletPermissionImpl implements PortletPermission {
 		}
 
 		return access;
+	}
+
+	public boolean hasConfigurationPermission(
+			PermissionChecker permissionChecker, long groupId, Layout layout,
+			String actionId)
+		throws PortalException, SystemException {
+
+		LayoutTypePortlet layoutTypePortlet =
+			(LayoutTypePortlet)layout.getLayoutType();
+
+		for (Portlet portlet : layoutTypePortlet.getAllPortlets()) {
+			if (contains(
+					permissionChecker, groupId, layout, portlet.getPortletId(),
+					actionId)) {
+
+				return true;
+			}
+
+			if (contains(
+					permissionChecker, groupId, null,
+					portlet.getRootPortletId(), actionId)) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public boolean hasControlPanelAccessPermission(

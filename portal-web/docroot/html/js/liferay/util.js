@@ -943,7 +943,7 @@
 			form.all(selector).set('checked', A.one(allBox).get('checked'));
 
 			if (selectClassName) {
-				form.all(selectClassName).toggleClass('selected', A.one(allBox).get('checked'));
+				form.all(selectClassName).toggleClass('info', A.one(allBox).get('checked'));
 			}
 		},
 		['aui-base']
@@ -1425,7 +1425,7 @@
 
 			Liferay.Util.toggleDisabled(A.byIdNS(namespace, 'removeFolderButton'), true);
 		},
-		['aui-base']
+		['aui-base', 'liferay-node']
 	);
 
 	Liferay.provide(
@@ -1644,7 +1644,7 @@
 				);
 			}
 		},
-		['aui-base']
+		['aui-base', 'liferay-util-window']
 	);
 
 	Liferay.provide(
@@ -1666,10 +1666,10 @@
 			if (button) {
 				button.set('disabled', false);
 
-				button.ancestor('.btn').removeClass('btn-disabled');
+				button.removeClass('btn-disabled');
 			}
 		},
-		['aui-base']
+		['aui-base', 'liferay-node']
 	);
 
 	Liferay.provide(
@@ -1849,22 +1849,29 @@
 	Liferay.provide(
 		Util,
 		'toggleRadio',
-		function(radioId, showBoxId, hideBoxIds) {
+		function(radioId, showBoxIds, hideBoxIds) {
 			var radioButton = A.one('#' + radioId);
-			var showBox = A.one('#' + showBoxId);
 
 			if (radioButton) {
 				var checked = radioButton.get('checked');
 
-				if (showBox) {
-					showBox.toggle(checked);
+				var showBoxes;
+
+				if (Lang.isValue(showBoxIds)) {
+					if (Lang.isArray(showBoxIds)) {
+						showBoxIds = showBoxIds.join(',#');
+					}
+
+					showBoxes = A.all('#' + showBoxIds);
+
+					showBoxes.toggle(checked);
 				}
 
 				radioButton.on(
 					'change',
 					function() {
-						if (showBox) {
-							showBox.show();
+						if (showBoxes) {
+							showBoxes.show();
 						}
 
 						if (Lang.isValue(hideBoxIds)) {

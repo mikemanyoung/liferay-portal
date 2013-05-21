@@ -14,16 +14,13 @@
 
 package com.liferay.portal.tools.servicebuilder;
 
-import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.freemarker.FreeMarkerUtil;
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.dao.db.IndexMetadata;
 import com.liferay.portal.kernel.dao.db.IndexMetadataFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.process.ClassPathUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ArrayUtil_IW;
 import com.liferay.portal.kernel.util.CharPool;
@@ -84,18 +81,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.lang.reflect.Constructor;
-
-import java.net.URL;
-import java.net.URLClassLoader;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -103,14 +94,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.DocumentException;
-
-import org.springframework.context.support.AbstractApplicationContext;
 
 /**
  * @author Brian Wing Shun Chan
@@ -283,6 +270,7 @@ public class ServiceBuilder {
 				"\t-Dservice.tpl.copyright.txt=copyright.txt\n"+
 				"\t-Dservice.tpl.ejb_pk=" + _TPL_ROOT + "ejb_pk.ftl\n"+
 				"\t-Dservice.tpl.exception=" + _TPL_ROOT + "exception.ftl\n"+
+				"\t-Dservice.tpl.export_actionable_dynamic_query=" + _TPL_ROOT + "export_actionable_dynamic_query.ftl\n"+
 				"\t-Dservice.tpl.extended_model=" + _TPL_ROOT + "extended_model.ftl\n"+
 				"\t-Dservice.tpl.extended_model_base_impl=" + _TPL_ROOT + "extended_model_base_impl.ftl\n"+
 				"\t-Dservice.tpl.extended_model_impl=" + _TPL_ROOT + "extended_model_impl.ftl\n"+
@@ -331,84 +319,6 @@ public class ServiceBuilder {
 		}
 
 		Introspector.flushCaches();
-	}
-
-	public static void reenterableMain(String[] args) throws Exception {
-		Properties properties = new Properties(System.getProperties());
-
-		URL[] jvmClassPathURLs = ClassPathUtil.getClassPathURLs(
-			ClassPathUtil.getJVMClassPath(true));
-
-		Thread currentThread = Thread.currentThread();
-
-		Set<URL> contextClassPathURLs = ClassPathUtil.getClassPathURLs(
-			currentThread.getContextClassLoader());
-
-		Class<ServiceBuilder> serviceBuilderClass = ServiceBuilder.class;
-
-		Set<URL> serviceBuilderClassPathURLs = ClassPathUtil.getClassPathURLs(
-			serviceBuilderClass.getClassLoader());
-
-		Set<URL> mergedURLs = new LinkedHashSet<URL>();
-
-		mergedURLs.addAll(serviceBuilderClassPathURLs);
-		mergedURLs.addAll(contextClassPathURLs);
-		mergedURLs.addAll(Arrays.asList(jvmClassPathURLs));
-
-		ClassLoader classLoader = new URLClassLoader(
-			mergedURLs.toArray(new URL[mergedURLs.size()]), null);
-
-		class ReenterableCallable implements Callable<Void> {
-
-			@SuppressWarnings("unused")
-			public ReenterableCallable(String[] args) {
-				_args = args;
-			}
-
-			@Override
-			public Void call() throws Exception {
-				main(_args);
-
-				BeanLocatorImpl beanLocatorImpl =
-					(BeanLocatorImpl)PortalBeanLocatorUtil.getBeanLocator();
-
-				AbstractApplicationContext abstractApplicationContext =
-					(AbstractApplicationContext)
-						beanLocatorImpl.getApplicationContext();
-
-				abstractApplicationContext.close();
-
-				return null;
-			}
-
-			private final String[] _args;
-
-		}
-
-		Class<? extends Callable<Void>> reenterableCallableClass =
-			(Class<? extends Callable<Void>>)classLoader.loadClass(
-				ReenterableCallable.class.getName());
-
-		Constructor<? extends Callable<Void>> constructor =
-			reenterableCallableClass.getConstructor(String[].class);
-
-		constructor.setAccessible(true);
-
-		FutureTask<Void> mainFutureTask = new FutureTask<Void>(
-			constructor.newInstance(new Object[]{args}));
-
-		Thread invokerThread = new Thread(mainFutureTask);
-
-		invokerThread.setContextClassLoader(classLoader);
-		invokerThread.setDaemon(true);
-
-		invokerThread.start();
-
-		mainFutureTask.get();
-
-		invokerThread.join();
-
-		System.setProperties(properties);
 	}
 
 	public static String toHumanName(String name) {
@@ -818,6 +728,10 @@ public class ServiceBuilder {
 
 						if (entity.hasActionableDynamicQuery()) {
 							_createActionableDynamicQuery(entity);
+
+							if (entity.isStagedModel()) {
+								_createExportActionableDynamicQuery(entity);
+							}
 						}
 
 						if (entity.hasColumns()) {
@@ -1950,6 +1864,27 @@ public class ServiceBuilder {
 				}
 			}
 		}
+	}
+
+	private void _createExportActionableDynamicQuery(Entity entity)
+		throws Exception {
+
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+
+		// Content
+
+		String content = _processTemplate(
+			_tplExportActionableDynamicQuery, context);
+
+		// Write file
+
+		File ejbFile = new File(
+			_serviceOutputPath + "/service/persistence/" +
+				entity.getName() + "ExportActionableDynamicQuery.java");
+
+		writeFile(ejbFile, content, _author);
 	}
 
 	private void _createExtendedModel(Entity entity) throws Exception {
@@ -5058,6 +4993,8 @@ public class ServiceBuilder {
 	private String _tplBlobModel = _TPL_ROOT + "blob_model.ftl";
 	private String _tplEjbPk = _TPL_ROOT + "ejb_pk.ftl";
 	private String _tplException = _TPL_ROOT + "exception.ftl";
+	private String _tplExportActionableDynamicQuery =
+		_TPL_ROOT + "export_actionable_dynamic_query.ftl";
 	private String _tplExtendedModel = _TPL_ROOT + "extended_model.ftl";
 	private String _tplExtendedModelBaseImpl =
 		_TPL_ROOT + "extended_model_base_impl.ftl";

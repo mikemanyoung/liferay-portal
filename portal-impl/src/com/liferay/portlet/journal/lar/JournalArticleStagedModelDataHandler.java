@@ -83,6 +83,11 @@ public class JournalArticleStagedModelDataHandler
 	}
 
 	@Override
+	public String getDisplayName(JournalArticle article) {
+		return article.getTitleCurrentValue();
+	}
+
+	@Override
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext, JournalArticle article)
 		throws Exception {
@@ -117,7 +122,8 @@ public class JournalArticleStagedModelDataHandler
 				portletDataContext, ddmStructure);
 
 			portletDataContext.addReferenceElement(
-				articleElement, ddmStructure);
+				article, articleElement, ddmStructure,
+				PortletDataContext.REFERENCE_TYPE_STRONG, false);
 
 			long parentStructureId = ddmStructure.getParentStructureId();
 
@@ -142,7 +148,9 @@ public class JournalArticleStagedModelDataHandler
 			StagedModelDataHandlerUtil.exportStagedModel(
 				portletDataContext, ddmTemplate);
 
-			portletDataContext.addReferenceElement(articleElement, ddmTemplate);
+			portletDataContext.addReferenceElement(
+				article, articleElement, ddmTemplate,
+				PortletDataContext.REFERENCE_TYPE_STRONG, false);
 		}
 
 		if (article.isSmallImage()) {
@@ -151,9 +159,10 @@ public class JournalArticleStagedModelDataHandler
 
 			if (Validator.isNotNull(article.getSmallImageURL())) {
 				String smallImageURL =
-					ExportImportUtil.exportContentReferences(
-						portletDataContext, articleElement,
-						article.getSmallImageURL().concat(StringPool.SPACE));
+					ExportImportUtil.replaceExportContentReferences(
+						portletDataContext, article, articleElement,
+						article.getSmallImageURL().concat(StringPool.SPACE),
+						true);
 
 				article.setSmallImageURL(smallImageURL);
 			}
@@ -171,30 +180,24 @@ public class JournalArticleStagedModelDataHandler
 			}
 		}
 
-		if (portletDataContext.getBooleanParameter(
-				JournalPortletDataHandler.NAMESPACE, "images")) {
+		List<JournalArticleImage> articleImages =
+			JournalArticleImageUtil.findByG_A_V(
+				article.getGroupId(), article.getArticleId(),
+				article.getVersion());
 
-			List<JournalArticleImage> articleImages =
-				JournalArticleImageUtil.findByG_A_V(
-					article.getGroupId(), article.getArticleId(),
-					article.getVersion());
-
-			for (JournalArticleImage articleImage : articleImages) {
-				exportArticleImage(
-					portletDataContext, articleImage, article, articleElement);
-			}
+		for (JournalArticleImage articleImage : articleImages) {
+			exportArticleImage(
+				portletDataContext, articleImage, article, articleElement);
 		}
 
 		article.setStatusByUserUuid(article.getStatusByUserUuid());
 
-		if (portletDataContext.getBooleanParameter(
-				JournalPortletDataHandler.NAMESPACE, "embedded-assets")) {
+		String content = ExportImportUtil.replaceExportContentReferences(
+			portletDataContext, article, articleElement, article.getContent(),
+			portletDataContext.getBooleanParameter(
+				JournalPortletDataHandler.NAMESPACE, "embedded-assets"));
 
-			String content = ExportImportUtil.exportContentReferences(
-				portletDataContext, articleElement, article.getContent());
-
-			article.setContent(content);
-		}
+		article.setContent(content);
 
 		portletDataContext.addClassedModel(
 			articleElement, ExportImportPathUtil.getModelPath(article), article,
@@ -276,8 +279,8 @@ public class JournalArticleStagedModelDataHandler
 		Element articleElement =
 			portletDataContext.getImportDataStagedModelElement(article);
 
-		content = ExportImportUtil.importContentReferences(
-			portletDataContext, articleElement, content);
+		content = ExportImportUtil.replaceImportContentReferences(
+			portletDataContext, articleElement, content, true);
 
 		article.setContent(content);
 
@@ -497,9 +500,9 @@ public class JournalArticleStagedModelDataHandler
 
 			if (Validator.isNotNull(article.getSmallImageURL())) {
 				String smallImageURL =
-					ExportImportUtil.importContentReferences(
+					ExportImportUtil.replaceImportContentReferences(
 						portletDataContext, articleElement,
-						article.getSmallImageURL());
+						article.getSmallImageURL(), true);
 
 				article.setSmallImageURL(smallImageURL);
 			}
@@ -518,22 +521,16 @@ public class JournalArticleStagedModelDataHandler
 
 		Map<String, byte[]> images = new HashMap<String, byte[]>();
 
-		if (portletDataContext.getBooleanParameter(
-				JournalPortletDataHandler.NAMESPACE, "images")) {
+		List<Element> imagesElements =
+			portletDataContext.getReferenceDataElements(article, Image.class);
 
-			List<Element> imagesElements =
-				portletDataContext.getReferenceDataElements(
-					article, Image.class);
+		for (Element imageElement : imagesElements) {
+			String imagePath = imageElement.attributeValue("path");
 
-			for (Element imageElement : imagesElements) {
-				String imagePath = imageElement.attributeValue("path");
+			String fileName = imageElement.attributeValue("file-name");
 
-				String fileName = imageElement.attributeValue("file-name");
-
-				images.put(
-					fileName,
-					portletDataContext.getZipEntryAsByteArray(imagePath));
-			}
+			images.put(
+				fileName, portletDataContext.getZipEntryAsByteArray(imagePath));
 		}
 
 		String articleURL = null;
@@ -697,7 +694,7 @@ public class JournalArticleStagedModelDataHandler
 		portletDataContext.addZipEntry(articleImagePath, image.getTextObj());
 
 		portletDataContext.addReferenceElement(
-			articleElement, image, articleImagePath);
+			article, articleElement, image, articleImagePath, false);
 	}
 
 	protected void prepareLanguagesForImport(JournalArticle article)
@@ -714,6 +711,23 @@ public class JournalArticleStagedModelDataHandler
 			articleDefaultLocale, articleAvailableLocales);
 
 		article.prepareLocalizedFieldsForImport(defaultImportLocale);
+	}
+
+	@Override
+	protected boolean validateMissingReference(String uuid, long groupId) {
+		try {
+			JournalArticle journalArticle = JournalArticleUtil.fetchByUUID_G(
+				uuid, groupId);
+
+			if (journalArticle == null) {
+				return false;
+			}
+		}
+		catch (Exception e) {
+			return false;
+		}
+
+		return true;
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(

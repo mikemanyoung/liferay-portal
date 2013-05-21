@@ -15,9 +15,7 @@
 package com.liferay.portal.service;
 
 /**
- * <p>
- * This class is a wrapper for {@link GroupLocalService}.
- * </p>
+ * Provides a wrapper for {@link GroupLocalService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       GroupLocalService
@@ -1528,6 +1526,13 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _groupLocalService.getUserOrganizationsGroups(userId, start, end);
+	}
+
+	public com.liferay.portal.model.Group getUserPersonalSiteGroup(
+		long companyId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _groupLocalService.getUserPersonalSiteGroup(companyId);
 	}
 
 	/**

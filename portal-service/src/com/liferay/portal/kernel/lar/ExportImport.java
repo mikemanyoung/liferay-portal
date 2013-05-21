@@ -14,47 +14,73 @@
 
 package com.liferay.portal.kernel.lar;
 
+import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.model.StagedModel;
+
+import java.io.File;
+
+import java.util.Map;
 
 /**
  * @author Zsolt Berentey
  */
 public interface ExportImport {
 
-	public String exportContentReferences(
+	public ManifestSummary getManifestSummary(
+			long userId, long groupId, Map<String, String[]> parameterMap,
+			File file)
+		throws Exception;
+
+	public String replaceExportContentReferences(
+			PortletDataContext portletDataContext,
+			StagedModel entityStagedModel, Element entityElement,
+			String content, boolean exportReferencedContent)
+		throws Exception;
+
+	public String replaceExportDLReferences(
+			PortletDataContext portletDataContext,
+			StagedModel entityStagedModel, Element entityElement,
+			String content, boolean exportReferencedContent)
+		throws Exception;
+
+	public String replaceExportLayoutReferences(
+			PortletDataContext portletDataContext, String content,
+			boolean exportReferencedContent)
+		throws Exception;
+
+	public String replaceExportLinksToLayouts(
+			PortletDataContext portletDataContext,
+			StagedModel entityStagedModel, Element entityElement,
+			String content, boolean exportReferencedContent)
+		throws Exception;
+
+	public String replaceImportContentReferences(
 			PortletDataContext portletDataContext, Element entityElement,
-			String content)
+			String content, boolean importReferencedContent)
 		throws Exception;
 
-	public String exportDLReferences(
+	public String replaceImportDLReferences(
 			PortletDataContext portletDataContext, Element entityElement,
-			String content)
+			String content, boolean importReferencedContent)
 		throws Exception;
 
-	public String exportLayoutReferences(
-			PortletDataContext portletDataContext, String content)
+	public String replaceImportLayoutReferences(
+			PortletDataContext portletDataContext, String content,
+			boolean importReferencedContent)
 		throws Exception;
 
-	public String exportLinksToLayouts(
-			PortletDataContext portletDataContext, String content)
+	public String replaceImportLinksToLayouts(
+			PortletDataContext portletDataContext, String content,
+			boolean importReferencedContent)
 		throws Exception;
 
-	public String importContentReferences(
-			PortletDataContext portletDataContext, Element entityElement,
-			String content)
+	public Map<String, MissingReference> validateMissingReferences(
+			long userId, long groupId, Map<String, String[]> parameterMap,
+			File file)
 		throws Exception;
 
-	public String importDLReferences(
-			PortletDataContext portletDataContext, Element entityElement,
-			String content)
-		throws Exception;
-
-	public String importLayoutReferences(
-			PortletDataContext portletDataContext, String content)
-		throws Exception;
-
-	public String importLinksToLayouts(
-			PortletDataContext portletDataContext, String content)
-		throws Exception;
+	public void writeManifestSummary(
+		Document document, ManifestSummary manifestSummary);
 
 }

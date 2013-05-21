@@ -50,6 +50,11 @@ public class BlogsEntryStagedModelDataHandler
 	}
 
 	@Override
+	public String getDisplayName(BlogsEntry entry) {
+		return entry.getTitle();
+	}
+
+	@Override
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext, BlogsEntry entry)
 		throws Exception {
@@ -65,9 +70,11 @@ public class BlogsEntryStagedModelDataHandler
 				entry.getSmallImageId());
 
 			if (Validator.isNotNull(entry.getSmallImageURL())) {
-				String smallImageURL = ExportImportUtil.exportContentReferences(
-					portletDataContext, entryElement,
-					entry.getSmallImageURL().concat(StringPool.SPACE));
+				String smallImageURL =
+					ExportImportUtil.replaceExportContentReferences(
+						portletDataContext, entry, entryElement,
+						entry.getSmallImageURL().concat(StringPool.SPACE),
+						true);
 
 				entry.setSmallImageURL(smallImageURL);
 			}
@@ -85,8 +92,8 @@ public class BlogsEntryStagedModelDataHandler
 			}
 		}
 
-		String content = ExportImportUtil.exportContentReferences(
-			portletDataContext, entryElement, entry.getContent());
+		String content = ExportImportUtil.replaceExportContentReferences(
+			portletDataContext, entry, entryElement, entry.getContent(), true);
 
 		entry.setContent(content);
 
@@ -105,8 +112,8 @@ public class BlogsEntryStagedModelDataHandler
 		Element entryElement =
 			portletDataContext.getImportDataStagedModelElement(entry);
 
-		String content = ExportImportUtil.importContentReferences(
-			portletDataContext, entryElement, entry.getContent());
+		String content = ExportImportUtil.replaceImportContentReferences(
+			portletDataContext, entryElement, entry.getContent(), true);
 
 		entry.setContent(content);
 
@@ -139,9 +146,9 @@ public class BlogsEntryStagedModelDataHandler
 
 				if (Validator.isNotNull(entry.getSmallImageURL())) {
 					String smallImageURL =
-						ExportImportUtil.importContentReferences(
+						ExportImportUtil.replaceImportContentReferences(
 							portletDataContext, entryElement,
-							entry.getSmallImageURL());
+							entry.getSmallImageURL(), true);
 
 					entry.setSmallImageURL(smallImageURL);
 				}

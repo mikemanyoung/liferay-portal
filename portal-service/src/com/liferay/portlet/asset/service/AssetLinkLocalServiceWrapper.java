@@ -17,9 +17,7 @@ package com.liferay.portlet.asset.service;
 import com.liferay.portal.service.ServiceWrapper;
 
 /**
- * <p>
- * This class is a wrapper for {@link AssetLinkLocalService}.
- * </p>
+ * Provides a wrapper for {@link AssetLinkLocalService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       AssetLinkLocalService
@@ -407,6 +405,14 @@ public class AssetLinkLocalServiceWrapper implements AssetLinkLocalService,
 		long entryId, int typeId)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _assetLinkLocalService.getReverseLinks(entryId, typeId);
+	}
+
+	public com.liferay.portlet.asset.model.AssetLink updateLink(long userId,
+		long entryId1, long entryId2, int typeId, int weight)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _assetLinkLocalService.updateLink(userId, entryId1, entryId2,
+			typeId, weight);
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package ${seleniumBuilderContext.getTestCasePackageName(testCaseName)};
 
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portalweb.portal.BaseTestCase;
 import com.liferay.portalweb.portal.util.SeleniumUtil;
 import com.liferay.portalweb.portal.util.liferayselenium.LiferaySelenium;
@@ -23,7 +24,6 @@ import java.util.Map;
 
 public class ${seleniumBuilderContext.getTestCaseSimpleClassName(testCaseName)} extends BaseTestCase {
 
-
 	<#if rootElement.element("var")??>
 		public ${seleniumBuilderContext.getTestCaseSimpleClassName(testCaseName)}() {
 			super();
@@ -43,6 +43,10 @@ public class ${seleniumBuilderContext.getTestCaseSimpleClassName(testCaseName)} 
 	@Override
 	public void setUp() throws Exception {
 		selenium = SeleniumUtil.getSelenium();
+
+		if (Validator.isNull(selenium.getPrimaryTestSuiteName())) {
+			selenium.setPrimaryTestSuiteName("${seleniumBuilderContext.getTestCaseClassName(testCaseName)}");
+		}
 
 		commandScopeVariables = new HashMap<String, String>();
 

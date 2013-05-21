@@ -15,9 +15,7 @@
 package com.liferay.portal.service;
 
 /**
- * <p>
- * This class is a wrapper for {@link WebsiteLocalService}.
- * </p>
+ * Provides a wrapper for {@link WebsiteLocalService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       WebsiteLocalService
@@ -240,6 +238,10 @@ public class WebsiteLocalServiceWrapper implements WebsiteLocalService,
 		_websiteLocalService.setBeanIdentifier(beanIdentifier);
 	}
 
+	/**
+	* @deprecated As of 6.2.0, replaced by {@link #addWebsite(long, String,
+	long, String, int, boolean, ServiceContext)}
+	*/
 	public com.liferay.portal.model.Website addWebsite(long userId,
 		java.lang.String className, long classPK, java.lang.String url,
 		int typeId, boolean primary)
@@ -249,10 +251,27 @@ public class WebsiteLocalServiceWrapper implements WebsiteLocalService,
 			typeId, primary);
 	}
 
+	public com.liferay.portal.model.Website addWebsite(long userId,
+		java.lang.String className, long classPK, java.lang.String url,
+		int typeId, boolean primary,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _websiteLocalService.addWebsite(userId, className, classPK, url,
+			typeId, primary, serviceContext);
+	}
+
 	public void deleteWebsites(long companyId, java.lang.String className,
 		long classPK)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		_websiteLocalService.deleteWebsites(companyId, className, classPK);
+	}
+
+	public com.liferay.portal.model.Website fetchWebsiteByUuidAndCompanyId(
+		java.lang.String uuid, long companyId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _websiteLocalService.fetchWebsiteByUuidAndCompanyId(uuid,
+			companyId);
 	}
 
 	public java.util.List<com.liferay.portal.model.Website> getWebsites()

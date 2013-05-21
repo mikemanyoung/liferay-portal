@@ -245,6 +245,19 @@ public class HttpImpl implements Http {
 		MultiThreadedHttpConnectionManager.shutdownAll();
 	}
 
+	public String encodeParameters(String url) {
+		String queryString = getQueryString(url);
+
+		if (Validator.isNull(queryString)) {
+			return url;
+		}
+
+		String encodedQueryString = parameterMapToString(
+			parameterMapFromString(queryString), false);
+
+		return StringUtil.replace(url, queryString, encodedQueryString);
+	}
+
 	public String encodePath(String path) {
 		path = StringUtil.replace(path, StringPool.SLASH, _TEMP_SLASH);
 		path = encodeURL(path, true);
@@ -902,38 +915,38 @@ public class HttpImpl implements Http {
 	public String URLtoString(URL url) throws IOException {
 		String xml = null;
 
-		if (url != null) {
-			String protocol = url.getProtocol().toLowerCase();
-
-			if (protocol.startsWith(Http.HTTP) ||
-				protocol.startsWith(Http.HTTPS)) {
-
-				return URLtoString(url.toString());
-			}
-
-			URLConnection urlConnection = url.openConnection();
-
-			InputStream inputStream = urlConnection.getInputStream();
-
-			UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
-				new UnsyncByteArrayOutputStream();
-
-			byte[] bytes = new byte[512];
-
-			for (int i = inputStream.read(bytes, 0, 512); i != -1;
-					i = inputStream.read(bytes, 0, 512)) {
-
-				unsyncByteArrayOutputStream.write(bytes, 0, i);
-			}
-
-			xml = new String(
-				unsyncByteArrayOutputStream.unsafeGetByteArray(), 0,
-				unsyncByteArrayOutputStream.size());
-
-			inputStream.close();
-
-			unsyncByteArrayOutputStream.close();
+		if (url == null) {
+			return null;
 		}
+
+		String protocol = url.getProtocol().toLowerCase();
+
+		if (protocol.startsWith(Http.HTTP) || protocol.startsWith(Http.HTTPS)) {
+			return URLtoString(url.toString());
+		}
+
+		URLConnection urlConnection = url.openConnection();
+
+		InputStream inputStream = urlConnection.getInputStream();
+
+		UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
+			new UnsyncByteArrayOutputStream();
+
+		byte[] bytes = new byte[512];
+
+		for (int i = inputStream.read(bytes, 0, 512); i != -1;
+				i = inputStream.read(bytes, 0, 512)) {
+
+			unsyncByteArrayOutputStream.write(bytes, 0, i);
+		}
+
+		xml = new String(
+			unsyncByteArrayOutputStream.unsafeGetByteArray(), 0,
+			unsyncByteArrayOutputStream.size());
+
+		inputStream.close();
+
+		unsyncByteArrayOutputStream.close();
 
 		return xml;
 	}

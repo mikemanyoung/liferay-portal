@@ -15,9 +15,7 @@
 package com.liferay.portal.service;
 
 /**
- * <p>
- * This class is a wrapper for {@link WebsiteService}.
- * </p>
+ * Provides a wrapper for {@link WebsiteService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       WebsiteService
@@ -47,6 +45,10 @@ public class WebsiteServiceWrapper implements WebsiteService,
 		_websiteService.setBeanIdentifier(beanIdentifier);
 	}
 
+	/**
+	* @deprecated As of 6.2.0, replaced by {@link #addWebsite( String, long,
+	String, int, boolean, ServiceContext)}
+	*/
 	public com.liferay.portal.model.Website addWebsite(
 		java.lang.String className, long classPK, java.lang.String url,
 		int typeId, boolean primary)
@@ -54,6 +56,16 @@ public class WebsiteServiceWrapper implements WebsiteService,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _websiteService.addWebsite(className, classPK, url, typeId,
 			primary);
+	}
+
+	public com.liferay.portal.model.Website addWebsite(
+		java.lang.String className, long classPK, java.lang.String url,
+		int typeId, boolean primary,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _websiteService.addWebsite(className, classPK, url, typeId,
+			primary, serviceContext);
 	}
 
 	public void deleteWebsite(long websiteId)

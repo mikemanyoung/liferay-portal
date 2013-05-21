@@ -55,6 +55,11 @@ public class DDMTemplateStagedModelDataHandler
 		return CLASS_NAMES;
 	}
 
+	@Override
+	public String getDisplayName(DDMTemplate template) {
+		return template.getNameCurrentValue();
+	}
+
 	protected DDMTemplate addTemplate(
 			long userId, long groupId, DDMTemplate template, long classPK,
 			File smallFile, ServiceContext serviceContext)
@@ -118,9 +123,10 @@ public class DDMTemplateStagedModelDataHandler
 
 			if (Validator.isNotNull(template.getSmallImageURL())) {
 				String smallImageURL =
-					ExportImportUtil.exportContentReferences(
-						portletDataContext, templateElement,
-						template.getSmallImageURL().concat(StringPool.SPACE));
+					ExportImportUtil.replaceExportContentReferences(
+						portletDataContext, template, templateElement,
+						template.getSmallImageURL().concat(StringPool.SPACE),
+						true);
 
 				template.setSmallImageURL(smallImageURL);
 			}
@@ -142,8 +148,9 @@ public class DDMTemplateStagedModelDataHandler
 		if (portletDataContext.getBooleanParameter(
 				DDMPortletDataHandler.NAMESPACE, "embedded-assets")) {
 
-			String content = ExportImportUtil.exportContentReferences(
-				portletDataContext, templateElement, template.getScript());
+			String content = ExportImportUtil.replaceExportContentReferences(
+				portletDataContext, template, templateElement,
+				template.getScript(), true);
 
 			template.setScript(content);
 		}
@@ -171,8 +178,10 @@ public class DDMTemplateStagedModelDataHandler
 		DDMStructure structure =
 			(DDMStructure)portletDataContext.getZipEntryAsObject(structurePath);
 
-		StagedModelDataHandlerUtil.importStagedModel(
-			portletDataContext, structure);
+		if (structure != null) {
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext, structure);
+		}
 
 		long classPK = MapUtil.getLong(
 			structureIds, template.getClassPK(), template.getClassPK());
@@ -187,9 +196,9 @@ public class DDMTemplateStagedModelDataHandler
 
 			if (Validator.isNotNull(template.getSmallImageURL())) {
 				String smallImageURL =
-					ExportImportUtil.importContentReferences(
+					ExportImportUtil.replaceImportContentReferences(
 						portletDataContext, element,
-						template.getSmallImageURL());
+						template.getSmallImageURL(), true);
 
 				template.setSmallImageURL(smallImageURL);
 			}

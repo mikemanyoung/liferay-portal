@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.servlet.GenericServletWrapper;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.template.TemplateConstants;
-import com.liferay.portal.kernel.template.TemplateContextType;
 import com.liferay.portal.kernel.template.TemplateVariableGroup;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -164,7 +163,9 @@ public class PortletDisplayTemplateImpl implements PortletDisplayTemplate {
 		return portletDisplayDDMTemplateId;
 	}
 
-	public Map<String, TemplateVariableGroup> getTemplateVariableGroups() {
+	public Map<String, TemplateVariableGroup> getTemplateVariableGroups(
+		String language) {
+
 		Map<String, TemplateVariableGroup> templateVariableGroups =
 			new LinkedHashMap<String, TemplateVariableGroup>();
 
@@ -206,9 +207,13 @@ public class PortletDisplayTemplateImpl implements PortletDisplayTemplate {
 		utilTemplateVariableGroup.addVariable(
 			"http-request", HttpServletRequest.class,
 			PortletDisplayTemplateConstants.REQUEST);
-		utilTemplateVariableGroup.addVariable(
-			"liferay-taglib", VelocityTaglib.class,
-			PortletDisplayTemplateConstants.TAGLIB_LIFERAY);
+
+		if (language.equals(TemplateConstants.LANG_TYPE_VM)) {
+			utilTemplateVariableGroup.addVariable(
+				"liferay-taglib", VelocityTaglib.class,
+				PortletDisplayTemplateConstants.TAGLIB_LIFERAY);
+		}
+
 		utilTemplateVariableGroup.addVariable(
 			"render-request", RenderRequest.class,
 			PortletDisplayTemplateConstants.RENDER_REQUEST);
@@ -412,7 +417,6 @@ public class PortletDisplayTemplateImpl implements PortletDisplayTemplate {
 
 	private Transformer _transformer = new Transformer(
 		PropsKeys.DYNAMIC_DATA_LISTS_TRANSFORMER_LISTENER,
-		PropsKeys.DYNAMIC_DATA_LISTS_ERROR_TEMPLATE,
-		TemplateContextType.STANDARD);
+		PropsKeys.DYNAMIC_DATA_LISTS_ERROR_TEMPLATE, false);
 
 }

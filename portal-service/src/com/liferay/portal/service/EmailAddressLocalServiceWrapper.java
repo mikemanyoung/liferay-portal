@@ -15,9 +15,7 @@
 package com.liferay.portal.service;
 
 /**
- * <p>
- * This class is a wrapper for {@link EmailAddressLocalService}.
- * </p>
+ * Provides a wrapper for {@link EmailAddressLocalService}.
  *
  * @author    Brian Wing Shun Chan
  * @see       EmailAddressLocalService
@@ -245,6 +243,10 @@ public class EmailAddressLocalServiceWrapper implements EmailAddressLocalService
 		_emailAddressLocalService.setBeanIdentifier(beanIdentifier);
 	}
 
+	/**
+	* @deprecated As of 6.2.0, replaced by {@link #addEmailAddress(long,
+	String, long, String, int, boolean, ServiceContext)}
+	*/
 	public com.liferay.portal.model.EmailAddress addEmailAddress(long userId,
 		java.lang.String className, long classPK, java.lang.String address,
 		int typeId, boolean primary)
@@ -254,11 +256,28 @@ public class EmailAddressLocalServiceWrapper implements EmailAddressLocalService
 			classPK, address, typeId, primary);
 	}
 
+	public com.liferay.portal.model.EmailAddress addEmailAddress(long userId,
+		java.lang.String className, long classPK, java.lang.String address,
+		int typeId, boolean primary,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _emailAddressLocalService.addEmailAddress(userId, className,
+			classPK, address, typeId, primary, serviceContext);
+	}
+
 	public void deleteEmailAddresses(long companyId,
 		java.lang.String className, long classPK)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		_emailAddressLocalService.deleteEmailAddresses(companyId, className,
 			classPK);
+	}
+
+	public com.liferay.portal.model.EmailAddress fetchEmailAddressByUuidAndCompanyId(
+		java.lang.String uuid, long companyId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _emailAddressLocalService.fetchEmailAddressByUuidAndCompanyId(uuid,
+			companyId);
 	}
 
 	public java.util.List<com.liferay.portal.model.EmailAddress> getEmailAddresses()

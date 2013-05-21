@@ -16,10 +16,13 @@ package com.liferay.portal.lar;
 
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.lar.ExportImportUtil;
+import com.liferay.portal.kernel.lar.MissingReference;
 import com.liferay.portal.kernel.lar.PortletDataContext;
+import com.liferay.portal.kernel.lar.PortletDataContextFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.test.ExecutionTestListeners;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -28,8 +31,10 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipWriter;
+import com.liferay.portal.kernel.zip.ZipWriterFactoryUtil;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
+import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceTestUtil;
@@ -44,6 +49,7 @@ import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.util.DLAppTestUtil;
+import com.liferay.portlet.journal.util.JournalTestUtil;
 
 import java.io.File;
 import java.io.InputStream;
@@ -51,7 +57,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -59,11 +64,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.testng.Assert;
 
 /**
  * @author Zsolt Berentey
@@ -100,26 +104,32 @@ public class ExportImportUtilTest {
 
 		TestReaderWriter testReaderWriter = new TestReaderWriter();
 
-		_portletDataContextExport = new PortletDataContextImpl(
-			_stagingGroup.getCompanyId(), _stagingGroup.getGroupId(),
-			new HashMap<String, String[]>(), new HashSet<String>(),
-			new Date(System.currentTimeMillis() - Time.HOUR), new Date(),
-			testReaderWriter);
+		_portletDataContextExport =
+			PortletDataContextFactoryUtil.createExportPortletDataContext(
+				_stagingGroup.getCompanyId(), _stagingGroup.getGroupId(),
+				new HashMap<String, String[]>(),
+				new Date(System.currentTimeMillis() - Time.HOUR), new Date(),
+				testReaderWriter);
 
 		Element rootElement = SAXReaderUtil.createElement("root");
 
 		_portletDataContextExport.setExportDataRootElement(rootElement);
 
-		_portletDataContextImport = new PortletDataContextImpl(
-			_stagingGroup.getCompanyId(), _stagingGroup.getGroupId(),
-			new HashMap<String, String[]>(), new HashSet<String>(),
-			new CurrentUserIdStrategy(TestPropsValues.getUser()),
-			testReaderWriter);
+		_portletDataContextImport =
+			PortletDataContextFactoryUtil.createImportPortletDataContext(
+				_stagingGroup.getCompanyId(), _stagingGroup.getGroupId(),
+				new HashMap<String, String[]>(),
+				new CurrentUserIdStrategy(TestPropsValues.getUser()),
+				testReaderWriter);
 
 		_portletDataContextImport.setImportDataRootElement(rootElement);
 		_portletDataContextImport.setSourceGroupId(_stagingGroup.getGroupId());
 
 		rootElement.addElement("entry");
+
+		_referrerStagedModel = JournalTestUtil.addArticle(
+			_stagingGroup.getGroupId(), ServiceTestUtil.randomString(),
+			ServiceTestUtil.randomString());
 	}
 
 	@After
@@ -138,8 +148,9 @@ public class ExportImportUtilTest {
 
 		List<String> urls = getURLs(content);
 
-		content = ExportImportUtil.exportContentReferences(
-			_portletDataContextExport, rootElement.element("entry"), content);
+		content = ExportImportUtil.replaceExportContentReferences(
+			_portletDataContextExport, _referrerStagedModel,
+			rootElement.element("entry"), content, true);
 
 		for (String url : urls) {
 			Assert.assertFalse(content.contains(url));
@@ -170,8 +181,9 @@ public class ExportImportUtilTest {
 		String content = replaceParameters(
 			getContent("layout_references.txt"), _fileEntry);
 
-		content = ExportImportUtil.exportContentReferences(
-			_portletDataContextExport, rootElement.element("entry"), content);
+		content = ExportImportUtil.replaceExportContentReferences(
+			_portletDataContextExport, _referrerStagedModel,
+			rootElement.element("entry"), content, true);
 
 		Assert.assertFalse(
 			content.contains(PortalUtil.getPathFriendlyURLPrivateGroup()));
@@ -195,8 +207,9 @@ public class ExportImportUtilTest {
 		String content = replaceParameters(
 			getContent("layout_links.txt"), _fileEntry);
 
-		content = ExportImportUtil.exportContentReferences(
-			_portletDataContextExport, rootElement.element("entry"), content);
+		content = ExportImportUtil.replaceExportContentReferences(
+			_portletDataContextExport, _referrerStagedModel,
+			rootElement.element("entry"), content, true);
 
 		StringBundler sb = new StringBundler(5);
 
@@ -229,10 +242,11 @@ public class ExportImportUtilTest {
 		String content = replaceParameters(
 			getContent("dl_references.txt"), _fileEntry);
 
-		content = ExportImportUtil.exportContentReferences(
-			_portletDataContextExport, entryElement, content);
-		content = ExportImportUtil.importContentReferences(
-			_portletDataContextImport, entryElement, content);
+		content = ExportImportUtil.replaceExportContentReferences(
+			_portletDataContextExport, _referrerStagedModel, entryElement,
+			content, true);
+		content = ExportImportUtil.replaceImportContentReferences(
+			_portletDataContextImport, entryElement, content, true);
 
 		Assert.assertFalse(content.contains("[$dl-reference="));
 	}
@@ -247,10 +261,11 @@ public class ExportImportUtilTest {
 		String content = replaceParameters(
 			getContent("layout_references.txt"), _fileEntry);
 
-		content = ExportImportUtil.exportContentReferences(
-			_portletDataContextExport, entryElement, content);
-		content = ExportImportUtil.importContentReferences(
-			_portletDataContextExport, entryElement, content);
+		content = ExportImportUtil.replaceExportContentReferences(
+			_portletDataContextExport, _referrerStagedModel, entryElement,
+			content, true);
+		content = ExportImportUtil.replaceImportContentReferences(
+			_portletDataContextExport, entryElement, content, true);
 
 		Assert.assertFalse(
 			content.contains("@data_handler_private_group_servlet_mapping@"));
@@ -277,13 +292,35 @@ public class ExportImportUtilTest {
 		String content = replaceParameters(
 			getContent("layout_links.txt"), _fileEntry);
 
-		content = ExportImportUtil.exportContentReferences(
-			_portletDataContextExport, entryElement, content);
+		content = ExportImportUtil.replaceExportContentReferences(
+			_portletDataContextExport, _referrerStagedModel, entryElement,
+			content, true);
 
-		String importedContent = ExportImportUtil.exportContentReferences(
-			_portletDataContextExport, entryElement, content);
+		String importedContent =
+			ExportImportUtil.replaceExportContentReferences(
+				_portletDataContextExport, _referrerStagedModel, entryElement,
+				content, true);
 
 		Assert.assertEquals(importedContent, content);
+	}
+
+	@Test
+	public void testValidateMissingReferences() throws Exception {
+		String xml = replaceParameters(
+			getContent("missing_references.txt"), _fileEntry);
+
+		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
+
+		zipWriter.addEntry("/manifest.xml", xml);
+
+		Map<String, MissingReference> missingReferences =
+			ExportImportUtil.validateMissingReferences(
+				TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
+				new HashMap<String, String[]>(), zipWriter.getFile());
+
+		Assert.assertEquals(2, missingReferences.size());
+
+		FileUtil.delete(zipWriter.getFile());
 	}
 
 	protected String getContent(String fileName) throws Exception {
@@ -340,6 +377,7 @@ public class ExportImportUtilTest {
 	private Group _liveGroup;
 	private PortletDataContext _portletDataContextExport;
 	private PortletDataContext _portletDataContextImport;
+	private StagedModel _referrerStagedModel;
 	private Group _stagingGroup;
 
 	private class TestReaderWriter implements ZipReader, ZipWriter {

@@ -117,7 +117,7 @@ AUI.add(
 		var TPL_ERROR_FOLDER = new A.Template(
 			'<span class="lfr-status-success-label">{validFilesLength}</span>',
 			'<span class="lfr-status-error-label">{invalidFilesLength}</span>',
-			'<ul class="lfr-component">',
+			'<ul class="unstyled">',
 				'<tpl for="invalidFiles">',
 					'<li><b>{name}</b>: {errorMessage}</li>',
 				'</tpl>',
@@ -739,6 +739,8 @@ AUI.add(
 			},
 
 			_getNavigationOverlays: function() {
+				return null;
+
 				var instance = this;
 
 				var navigationOverlays = instance._navigationOverlays;
@@ -769,23 +771,24 @@ AUI.add(
 			_getUploadResponse: function(responseData) {
 				var instance = this;
 
-				var error = (Lang.isString(responseData) && responseData.indexOf('49') === 0);
-
+				var error;
 				var message;
 
-				if (!error) {
-					try {
-						responseData = A.JSON.parse(responseData);
-					}
-					catch (err) {
-					}
+				try {
+					responseData = A.JSON.parse(responseData);
+				}
+				catch (err) {
+				}
 
-					if (Lang.isObject(responseData)) {
+				if (Lang.isObject(responseData)) {
+					error = responseData.status && (responseData.status >= 490 && responseData.status < 500);
+
+					if (error) {
+						message = responseData.message;
+					}
+					else {
 						message = instance.ns('fileEntryId=') + responseData.fileEntryId;
 					}
-				}
-				else {
-					message = instance._errorMessages[Lang.trim(responseData)];
 				}
 
 				return {
@@ -910,13 +913,6 @@ AUI.add(
 
 					instance._invalidFileSizeText = Liferay.Language.get('please-enter-a-file-with-a-valid-file-size-no-larger-than-x');
 					instance._zeroByteFileText = Liferay.Language.get('the-file-contains-no-data-and-cannot-be-uploaded.-please-use-the-classic-uploader');
-
-					instance._errorMessages = {
-						'490': Liferay.Language.get('please-enter-a-unique-document-name'),
-						'491': Liferay.Language.get('document-names-must-end-with-one-of-the-following-extensions') + instance._allowedFileTypes,
-						'492': Liferay.Language.get('please-enter-a-file-with-a-valid-file-name'),
-						'493': sub(instance._invalidFileSizeText, [Math.floor(maxFileSize / SIZE_DENOMINATOR)])
-					};
 				}
 			},
 

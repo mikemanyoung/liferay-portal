@@ -15,46 +15,18 @@
 package com.liferay.portal.kernel.lar;
 
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.model.StagedModel;
+
+import java.io.File;
+
+import java.util.Map;
 
 /**
  * @author Zsolt Berentey
  */
 public class ExportImportUtil {
-
-	public static String exportContentReferences(
-			PortletDataContext portletDataContext, Element entityElement,
-			String content)
-		throws Exception {
-
-		return getExportImport().exportContentReferences(
-			portletDataContext, entityElement, content);
-	}
-
-	public static String exportDLReferences(
-			PortletDataContext portletDataContext, Element entityElement,
-			String content)
-		throws Exception {
-
-		return getExportImport().exportDLReferences(
-			portletDataContext, entityElement, content);
-	}
-
-	public static String exportLayoutReferences(
-			PortletDataContext portletDataContext, String content)
-		throws Exception {
-
-		return getExportImport().exportLayoutReferences(
-			portletDataContext, content);
-	}
-
-	public static String exportLinksToLayouts(
-			PortletDataContext portletDataContext, String content)
-		throws Exception {
-
-		return getExportImport().exportLinksToLayouts(
-			portletDataContext, content);
-	}
 
 	public static ExportImport getExportImport() {
 		PortalRuntimePermission.checkGetBeanProperty(ExportImportUtil.class);
@@ -62,38 +34,108 @@ public class ExportImportUtil {
 		return _exportImport;
 	}
 
-	public static String importContentReferences(
+	public static ManifestSummary getManifestSummary(
+			long userId, long groupId, Map<String, String[]> parameterMap,
+			File file)
+		throws Exception {
+
+		return getExportImport().getManifestSummary(
+			userId, groupId, parameterMap, file);
+	}
+
+	public static String replaceExportContentReferences(
+			PortletDataContext portletDataContext,
+			StagedModel entityStagedModel, Element entityElement,
+			String content, boolean exportReferencedContent)
+		throws Exception {
+
+		return getExportImport().replaceExportContentReferences(
+			portletDataContext, entityStagedModel, entityElement, content,
+			exportReferencedContent);
+	}
+
+	public static String replaceExportDLReferences(
+			PortletDataContext portletDataContext,
+			StagedModel entityStagedModel, Element entityElement,
+			String content, boolean exportReferencedContent)
+		throws Exception {
+
+		return getExportImport().replaceExportDLReferences(
+			portletDataContext, entityStagedModel, entityElement, content,
+			exportReferencedContent);
+	}
+
+	public static String replaceExportLayoutReferences(
+			PortletDataContext portletDataContext, String content,
+			boolean exportReferencedContent)
+		throws Exception {
+
+		return getExportImport().replaceExportLayoutReferences(
+			portletDataContext, content, exportReferencedContent);
+	}
+
+	public static String replaceExportLinksToLayouts(
+			PortletDataContext portletDataContext,
+			StagedModel entityStagedModel, Element entityElement,
+			String content, boolean exportReferencedContent)
+		throws Exception {
+
+		return getExportImport().replaceExportLinksToLayouts(
+			portletDataContext, entityStagedModel, entityElement, content,
+			exportReferencedContent);
+	}
+
+	public static String replaceImportContentReferences(
 			PortletDataContext portletDataContext, Element entityElement,
-			String content)
+			String content, boolean importReferencedContent)
 		throws Exception {
 
-		return getExportImport().importContentReferences(
-			portletDataContext, entityElement, content);
+		return getExportImport().replaceImportContentReferences(
+			portletDataContext, entityElement, content,
+			importReferencedContent);
 	}
 
-	public static String importDLReferences(
+	public static String replaceImportDLReferences(
 			PortletDataContext portletDataContext, Element entityElement,
-			String content)
+			String content, boolean importReferencedContent)
 		throws Exception {
 
-		return getExportImport().importDLReferences(
-			portletDataContext, entityElement, content);
+		return getExportImport().replaceImportDLReferences(
+			portletDataContext, entityElement, content,
+			importReferencedContent);
 	}
 
-	public static String importLayoutReferences(
-			PortletDataContext portletDataContext, String content)
+	public static String replaceImportLayoutReferences(
+			PortletDataContext portletDataContext, String content,
+			boolean importReferencedContent)
 		throws Exception {
 
-		return getExportImport().importLayoutReferences(
-			portletDataContext, content);
+		return getExportImport().replaceImportLayoutReferences(
+			portletDataContext, content, importReferencedContent);
 	}
 
-	public static String importLinksToLayouts(
-			PortletDataContext portletDataContext, String content)
+	public static String replaceImportLinksToLayouts(
+			PortletDataContext portletDataContext, String content,
+			boolean importReferencedContent)
 		throws Exception {
 
-		return getExportImport().importLinksToLayouts(
-			portletDataContext, content);
+		return getExportImport().replaceImportLinksToLayouts(
+			portletDataContext, content, importReferencedContent);
+	}
+
+	public static Map<String, MissingReference> validateMissingReferences(
+			long userId, long groupId, Map<String, String[]> parameterMap,
+			File file)
+		throws Exception {
+
+		return getExportImport().validateMissingReferences(
+			userId, groupId, parameterMap, file);
+	}
+
+	public static void writeManifestSummary(
+		Document document, ManifestSummary manifestSummary) {
+
+		getExportImport().writeManifestSummary(document, manifestSummary);
 	}
 
 	public void setExportImport(ExportImport exportImport) {
