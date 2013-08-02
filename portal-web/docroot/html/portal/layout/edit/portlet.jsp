@@ -100,6 +100,8 @@ Boolean showLayoutTemplates = ParamUtil.getBoolean(request, "showLayoutTemplates
 		layoutTemplateId = selLayoutTypePortlet.getLayoutTemplateId();
 	}
 
+	String layoutTemplateIdPrefix = StringPool.BLANK;
+
 	List<LayoutTemplate> layoutTemplates = LayoutTemplateLocalServiceUtil.getLayoutTemplates(selTheme.getThemeId());
 	%>
 

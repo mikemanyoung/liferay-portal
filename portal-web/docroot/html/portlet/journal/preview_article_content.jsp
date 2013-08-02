@@ -1,3 +1,4 @@
+<%--
 /**
  * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
@@ -11,25 +12,14 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+--%>
 
-package com.liferay.portlet.shopping.search;
+<%@ include file="/html/portlet/journal/init.jsp" %>
 
-import com.liferay.portal.kernel.dao.search.DAOParamUtil;
-import com.liferay.portal.kernel.util.ParamUtil;
+<%
+JournalArticle article = (JournalArticle)request.getAttribute(WebKeys.JOURNAL_ARTICLE);
+%>
 
-import javax.portlet.PortletRequest;
+<%= JournalArticleLocalServiceUtil.getArticleContent(article, article.getTemplateId(), null, themeDisplay.getLanguageId(), themeDisplay) %>
 
-/**
- * @author Brian Wing Shun Chan
- */
-public class CouponSearchTerms extends CouponDisplayTerms {
-
-	public CouponSearchTerms(PortletRequest portletRequest) {
-		super(portletRequest);
-
-		active = ParamUtil.getBoolean(portletRequest, ACTIVE, true);
-		code = DAOParamUtil.getLike(portletRequest, CODE);
-		discountType = DAOParamUtil.getString(portletRequest, DISCOUNT_TYPE);
-	}
-
-}
+<liferay-util:include page="/html/common/themes/bottom.jsp" />

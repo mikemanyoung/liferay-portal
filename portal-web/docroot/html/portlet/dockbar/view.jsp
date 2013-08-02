@@ -86,7 +86,7 @@ String toggleControlsState = GetterUtil.getString(SessionClicks.get(request, "li
 		%>
 
 		<c:if test="<%= controlPanelCategory.startsWith(PortletCategoryKeys.CURRENT_SITE) || !controlPanelCategory.equals(PortletCategoryKeys.MY) %>">
-			<span class="brand">
+			<div class="brand">
 				<a class="control-panel-back-link" href="<%= backURL %>" title="<liferay-ui:message key="back" />">
 					<i class="control-panel-back-icon icon-chevron-sign-left"></i>
 
@@ -95,17 +95,25 @@ String toggleControlsState = GetterUtil.getString(SessionClicks.get(request, "li
 					</span>
 				</a>
 
-				<c:choose>
-					<c:when test="<%= controlPanelCategory.startsWith(PortletCategoryKeys.CURRENT_SITE) %>">
-						<liferay-ui:message key="site-administration" />
-					</c:when>
-					<c:otherwise>
-						<a href="<%= themeDisplay.getURLControlPanel() %>">
-							<liferay-ui:message key="control-panel" />
-						</a>
-					</c:otherwise>
-				</c:choose>
-			</span>
+				<h1>
+					<c:choose>
+						<c:when test="<%= controlPanelCategory.startsWith(PortletCategoryKeys.CURRENT_SITE) %>">
+							<%@ include file="/html/portal/layout/view/control_panel_site_selector.jspf" %>
+
+							<span class="divider">/</span>
+
+							<span class="site-administration-title">
+								<liferay-ui:message key="site-administration" />
+							</span>
+						</c:when>
+						<c:otherwise>
+							<a href="<%= themeDisplay.getURLControlPanel() %>">
+								<liferay-ui:message key="control-panel" />
+							</a>
+						</c:otherwise>
+					</c:choose>
+				</h1>
+			</div>
 		</c:if>
 	</c:if>
 
@@ -164,7 +172,7 @@ String toggleControlsState = GetterUtil.getString(SessionClicks.get(request, "li
 				<portlet:param name="viewEntries" value="<%= Boolean.TRUE.toString() %>" />
 			</portlet:renderURL>
 
-			<aui:nav-item anchorId="addPanel" data-panelURL="<%= addURL %>" href="javascript:;" iconClass="icon-plus" label="add" />
+			<aui:nav-item anchorId="addPanel" cssClass="site-add-controls" data-panelURL="<%= addURL %>" href="javascript:;" iconClass="icon-plus" label="add" />
 		</c:if>
 
 		<c:if test="<%= !group.isControlPanel() && (LayoutPermissionUtil.contains(themeDisplay.getPermissionChecker(), layout, ActionKeys.UPDATE) || GroupPermissionUtil.contains(permissionChecker, group.getGroupId(), ActionKeys.PREVIEW_IN_DEVICE)) %>">
@@ -172,7 +180,7 @@ String toggleControlsState = GetterUtil.getString(SessionClicks.get(request, "li
 				<portlet:param name="struts_action" value="/dockbar/preview_panel" />
 			</portlet:renderURL>
 
-			<aui:nav-item anchorId="previewPanel" data-panelURL="<%= previewContentURL %>" href="javascript:;" iconClass="icon-desktop" label="preview" />
+			<aui:nav-item anchorId="previewPanel" cssClass="page-preview-controls" data-panelURL="<%= previewContentURL %>" href="javascript:;" iconClass="icon-desktop" label="preview" />
 		</c:if>
 
 		<c:if test="<%= !group.isControlPanel() && (themeDisplay.isShowLayoutTemplatesIcon() || themeDisplay.isShowPageSettingsIcon()) %>">
@@ -183,15 +191,11 @@ String toggleControlsState = GetterUtil.getString(SessionClicks.get(request, "li
 				<portlet:param name="selPlid" value="<%= String.valueOf(plid) %>" />
 			</portlet:renderURL>
 
-			<aui:nav-item anchorId="editLayoutPanel" data-panelURL="<%= editLayoutURL %>" href="javascript:;" iconClass="icon-edit" label="preview" />
+			<aui:nav-item anchorId="editLayoutPanel" cssClass="page-edit-controls" data-panelURL="<%= editLayoutURL %>" href="javascript:;" iconClass="icon-edit" label="edit" />
 		</c:if>
 
 		<c:if test="<%= !group.isControlPanel() && (!group.hasStagingGroup() || group.isStagingGroup()) && (hasLayoutUpdatePermission || (layoutTypePortlet.isCustomizable() && layoutTypePortlet.isCustomizedView() && hasLayoutCustomizePermission) || PortletPermissionUtil.hasConfigurationPermission(permissionChecker, themeDisplay.getSiteGroupId(), layout, ActionKeys.CONFIGURATION)) %>">
-			<liferay-util:buffer var="editControlsLabel">
-				<i class="controls-state-icon <%= toggleControlsState.equals("visible") ? "icon-ok" : "icon-remove" %>"></i>
-			</liferay-util:buffer>
-
-			<aui:nav-item anchorCssClass="toggle-controls-link" cssClass="toggle-controls" id="toggleControls" label="<%= editControlsLabel %>" />
+			<aui:nav-item anchorCssClass="toggle-controls-link" cssClass="toggle-controls" iconClass='<%= "controls-state-icon " + (toggleControlsState.equals("visible") ? "icon-eye-open" : "icon-eye-close") %>' id="toggleControls" label="edit-controls" />
 		</c:if>
 	</aui:nav>
 

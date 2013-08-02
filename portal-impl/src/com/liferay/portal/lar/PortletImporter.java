@@ -578,6 +578,11 @@ public class PortletImporter {
 
 		readAssetLinks(portletDataContext);
 
+		// Deletion system events
+
+		_deletionSystemEventImporter.importDeletionSystemEvents(
+			portletDataContext);
+
 		if (_log.isInfoEnabled()) {
 			_log.info("Importing portlet takes " + stopWatch.getTime() + " ms");
 		}
@@ -620,7 +625,8 @@ public class PortletImporter {
 	}
 
 	protected Map<Locale, String> getAssetCategoryTitleMap(
-		AssetCategory assetCategory, String name) {
+			AssetCategory assetCategory, String name)
+		throws PortalException, SystemException {
 
 		Map<Locale, String> titleMap = assetCategory.getTitleMap();
 
@@ -628,9 +634,8 @@ public class PortletImporter {
 			titleMap = new HashMap<Locale, String>();
 		}
 
-		Locale locale = LocaleUtil.getDefault();
-
-		titleMap.put(locale, name);
+		titleMap.put(
+			PortalUtil.getSiteDefaultLocale(assetCategory.getGroupId()), name);
 
 		return titleMap;
 	}
@@ -658,7 +663,8 @@ public class PortletImporter {
 	}
 
 	protected Map<Locale, String> getAssetVocabularyTitleMap(
-		AssetVocabulary assetVocabulary, String name) {
+			AssetVocabulary assetVocabulary, String name)
+		throws PortalException, SystemException {
 
 		Map<Locale, String> titleMap = assetVocabulary.getTitleMap();
 
@@ -666,9 +672,9 @@ public class PortletImporter {
 			titleMap = new HashMap<Locale, String>();
 		}
 
-		Locale locale = LocaleUtil.getDefault();
-
-		titleMap.put(locale, name);
+		titleMap.put(
+			PortalUtil.getSiteDefaultLocale(assetVocabulary.getGroupId()),
+			name);
 
 		return titleMap;
 	}
@@ -1861,8 +1867,9 @@ public class PortletImporter {
 				StringUtil.split(
 					_headerElement.attributeValue("available-locales")));
 
-			Locale[] targetAvailableLocales =
-				LanguageUtil.getAvailableLocales();
+			Locale[] targetAvailableLocales = LanguageUtil.getAvailableLocales(
+				PortalUtil.getSiteGroupId(
+					portletDataContext.getScopeGroupId()));
 
 			for (Locale sourceAvailableLocale : sourceAvailableLocales) {
 				if (!ArrayUtil.contains(
@@ -1884,6 +1891,8 @@ public class PortletImporter {
 
 	private static Log _log = LogFactoryUtil.getLog(PortletImporter.class);
 
+	private DeletionSystemEventImporter _deletionSystemEventImporter =
+		new DeletionSystemEventImporter();
 	private Element _headerElement;
 	private PermissionImporter _permissionImporter = new PermissionImporter();
 	private Element _rootElement;

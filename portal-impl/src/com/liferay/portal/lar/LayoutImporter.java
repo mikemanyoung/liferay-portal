@@ -735,10 +735,6 @@ public class LayoutImporter {
 		layoutSet = LayoutSetLocalServiceUtil.updatePageCount(
 			groupId, privateLayout);
 
-		if (_log.isInfoEnabled()) {
-			_log.info("Importing layouts takes " + stopWatch.getTime() + " ms");
-		}
-
 		// Site
 
 		GroupLocalServiceUtil.updateSite(groupId, true);
@@ -807,6 +803,15 @@ public class LayoutImporter {
 
 				LayoutSetLocalServiceUtil.updateLayoutSet(layoutSet);
 			}
+		}
+
+		// Deletion system events
+
+		_deletionSystemEventImporter.importDeletionSystemEvents(
+			portletDataContext);
+
+		if (_log.isInfoEnabled()) {
+			_log.info("Importing layouts takes " + stopWatch.getTime() + " ms");
 		}
 
 		zipReader.close();
@@ -1076,7 +1081,8 @@ public class LayoutImporter {
 			StringUtil.split(
 				_headerElement.attributeValue("available-locales")));
 
-		Locale[] targetAvailableLocales = LanguageUtil.getAvailableLocales();
+		Locale[] targetAvailableLocales = LanguageUtil.getAvailableLocales(
+			portletDataContext.getScopeGroupId());
 
 		for (Locale sourceAvailableLocale : sourceAvailableLocales) {
 			if (!ArrayUtil.contains(
@@ -1157,6 +1163,8 @@ public class LayoutImporter {
 	private static MethodHandler _loadThemesMethodHandler = new MethodHandler(
 		new MethodKey(ThemeLoaderFactory.class, "loadThemes"));
 
+	private DeletionSystemEventImporter _deletionSystemEventImporter =
+		new DeletionSystemEventImporter();
 	private Element _headerElement;
 	private List<Element> _layoutElements;
 	private Element _layoutsElement;

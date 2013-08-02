@@ -495,6 +495,8 @@ public interface PropsKeys {
 
 	public static final String COUNTER_INCREMENT_PREFIX = "counter.increment.";
 
+	public static final String CUSTOM_SQL_AUTO_ESCAPE_WILDCARDS_ENABLED = "custom.sql.auto.escape.wildcards.enabled";
+
 	public static final String CUSTOM_SQL_FUNCTION_ISNOTNULL = "custom.sql.function.isnotnull";
 
 	public static final String CUSTOM_SQL_FUNCTION_ISNULL = "custom.sql.function.isnull";
@@ -829,9 +831,11 @@ public interface PropsKeys {
 
 	public static final String FACEBOOK_CONNECT_VERIFIED_ACCOUNT_REQUIRED = "facebook.connect.verified.account.required";
 
-	public static final String FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_EMAILADDRESS = "field.editable.com.liferay.portal.model.User.emailAddress";
+	public static final String FIELD_EDITABLE_DOMAINS = "field.editable.domains";
 
-	public static final String FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_SCREENNAME = "field.editable.com.liferay.portal.model.User.screenName";
+	public static final String FIELD_EDITABLE_ROLES = "field.editable.roles";
+
+	public static final String FIELD_EDITABLE_USER_TYPES = "field.editable.user.types";
 
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_BIRTHDAY = "field.enable.com.liferay.portal.model.Contact.birthday";
 

@@ -1,12 +1,12 @@
 <definition>
 	<var name="pageName" value="Asset Publisher Page" />
 	<var name="portletName" value="Asset Publisher" />
-	<var name="workflowAssetType" value="Web Content Article" />
+	<var name="workflowAssetType" value="Web Content" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#gotoContentCP">
+		<execute macro="Page#gotoConfigurationCP">
 			<var name="portletName" value="Workflow Configuration" />
 		</execute>
 

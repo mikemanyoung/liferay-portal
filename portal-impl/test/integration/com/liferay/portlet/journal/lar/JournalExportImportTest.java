@@ -98,6 +98,12 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 			ServiceTestUtil.randomString());
 	}
 
+	@Override
+	protected void deleteStagedModel(StagedModel stagedModel) throws Exception {
+		JournalArticleLocalServiceUtil.deleteArticle(
+			(JournalArticle)stagedModel);
+	}
+
 	protected void exportImportJournalArticle(
 			boolean structuredContent, boolean companyScopeDependencies)
 		throws Exception {
@@ -278,6 +284,13 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 		JournalArticle article = (JournalArticle)stagedModel;
 
 		return article.getArticleResourceUuid();
+	}
+
+	@Override
+	protected void testExportImportDisplayStyle(long groupId, String scopeType)
+		throws Exception {
+
+		Assert.assertTrue("This test does not apply", true);
 	}
 
 }

@@ -12,22 +12,26 @@
  * details.
  */
 
-package com.liferay.portlet.workflowtasks.search;
+package com.liferay.portal.kernel.portlet;
 
-import com.liferay.portal.kernel.dao.search.DAOParamUtil;
-
-import javax.portlet.PortletRequest;
+import com.liferay.portal.model.Layout;
+import com.liferay.portal.theme.ThemeDisplay;
 
 /**
- * @author Marcellus Tavares
+ * @author Raymond Augé
  */
-public class WorkflowTaskSearchTerms extends WorkflowTaskDisplayTerms {
+public class PortletConfigurationLayoutUtil {
 
-	public WorkflowTaskSearchTerms(PortletRequest portletRequest) {
-		super(portletRequest);
+	public static Layout getLayout(ThemeDisplay themeDisplay) {
+		Layout layout = themeDisplay.getLayout();
 
-		name = DAOParamUtil.getLike(portletRequest, NAME);
-		type = DAOParamUtil.getLike(portletRequest, TYPE);
+		if (layout.isTypeControlPanel() &&
+			(themeDisplay.getScopeGroupId() != layout.getGroupId())) {
+
+			return null;
+		}
+
+		return layout;
 	}
 
 }

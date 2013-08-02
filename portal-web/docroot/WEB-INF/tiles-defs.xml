@@ -419,7 +419,7 @@
 	</definition>
 
 	<definition name="portlet.dockbar.add_layout" extends="portlet.dockbar">
-		<put name="portlet_content" value="/portlet/dockbar/add_layout.jsp" />
+		<put name="portlet_content" value="/portlet/layouts_admin/add_layout.jsp" />
 	</definition>
 
 	<definition name="portlet.dockbar.add_panel" extends="portlet.dockbar">
@@ -738,6 +738,10 @@
 
 	<definition name="portlet.journal.move_folder" extends="portlet.journal">
 		<put name="portlet_content" value="/portlet/journal/move_folder.jsp" />
+	</definition>
+
+	<definition name="portlet.journal.preview_article_content" extends="portlet.journal">
+		<put name="portlet_content" value="/portlet/journal/preview_article_content.jsp" />
 	</definition>
 
 	<definition name="portlet.journal.raw_article_content" extends="portlet.journal">

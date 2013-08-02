@@ -385,6 +385,10 @@ alter table Image drop column text_;
 
 alter table JournalArticle add folderId LONG;
 
+COMMIT_TRANSACTION;
+
+update JournalArticle set folderId = 0;
+
 create table JournalFolder (
 	uuid_ VARCHAR(75) null,
 	folderId LONG not null primary key,
@@ -497,6 +501,9 @@ alter table PollsChoice add modifiedDate DATE null;
 
 alter table PollsVote add uuid_ VARCHAR(75) null;
 alter table PollsVote add groupId LONG;
+
+update Portlet set active_ = FALSE where portletId = "62";
+update Portlet set active_ = FALSE where portletId = "173";
 
 alter table RepositoryEntry add companyId LONG;
 alter table RepositoryEntry add userId LONG;

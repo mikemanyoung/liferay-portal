@@ -16,7 +16,7 @@
 	<property name="font-awesome.file" value="font-awesome-3.2.1.zip" />
 	<property name="scayt.file" value="scayt_4.0.3.zip" />
 	<property name="tinymce.file" value="tinymce_3.5.6.zip" />
-	<property name="vaadin.file" value="vaadin-6.7.4-liferay.zip" />
+	<property name="vaadin.file" value="vaadin-6.8.12-liferay.zip" />
 	<property name="wsc.file" value="wsc_4.0.3.zip" />
 
 	<path id="jspc.common.classpath">
@@ -797,6 +797,16 @@
 
 				<replace file="docroot/html/js/editor/ckeditor/editor/filemanager/browser/liferay/browser.html">
 					<replacefilter token="FCKeditor" value="CKeditor" />
+				</replace>
+
+				<replace file="docroot/html/js/editor/ckeditor/editor/filemanager/browser/liferay/browser.html">
+					<replacetoken><![CDATA[<meta http-equiv="Content-Type" content="text/html; charset=utf-8">]]></replacetoken>
+					<replacevalue>
+						<![CDATA[
+							<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+							<meta content="IE=EmulateIE9" http-equiv="X-UA-Compatible">
+						]]>
+					</replacevalue>
 				</replace>
 
 				<replace file="docroot/html/js/editor/ckeditor/editor/filemanager/browser/liferay/frmresourceslist.html">

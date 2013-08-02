@@ -1,15 +1,13 @@
 <definition>
 	<command name="addPG">
-		<execute macro="Page#gotoPG">
-			<var name="pageName" value="${pageName}" />
-		</execute>
-
 		<execute action="BasePortlet#click" locator-key1="OPTIONS_ICON" />
 		<execute action="BasePortlet#assertClick" locator-key1="OPTIONS_MENULIST_CONFIGURATION" value1="Configuration" />
 
 		<execute action="BlogsConfigurationPG#selectFrame" locator-key1="BLOGS_CONFIGURATION_IFRAME" />
 		<execute action="BlogsConfigurationPG#assertClick" locator-key1="DISPLAY_SETTINGS" value1="Display Settings" />
 		<execute action="BlogsConfigurationPG#assertClick" locator-key1="DISPLAY_SETTINGS_MANAGE_ADT_LINK" value1="Manage Display Templates for Liferay" />
+
+		<var name="key_adtTitle" value="${adtTitle}" />
 
 		<execute action="PGApplicationdisplaytemplates#selectFrameTop" locator-key1="ADT_IFRAME_TOP" value1="relative=top" />
 		<execute action="PGApplicationdisplaytemplates#selectFrame" locator-key1="ADT_IFRAME" />
@@ -48,7 +46,7 @@
 	</command>
 
 	<command name="tearDownPG">
-		<execute macro="Page#gotoContentCP">
+		<execute macro="Page#gotoConfigurationCP">
 			<var name="portletName" value="Application Display Templates" />
 		</execute>
 

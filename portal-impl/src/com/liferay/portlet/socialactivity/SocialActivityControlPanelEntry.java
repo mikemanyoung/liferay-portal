@@ -12,22 +12,28 @@
  * details.
  */
 
-package com.liferay.portlet.sitesadmin.search;
+package com.liferay.portlet.socialactivity;
 
-import com.liferay.portal.kernel.dao.search.DAOParamUtil;
-
-import javax.portlet.PortletRequest;
+import com.liferay.portal.model.Group;
+import com.liferay.portal.model.Portlet;
+import com.liferay.portal.security.permission.PermissionChecker;
+import com.liferay.portlet.BaseControlPanelEntry;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Sergio González
  */
-public class TeamSearchTerms extends TeamDisplayTerms {
+public class SocialActivityControlPanelEntry extends BaseControlPanelEntry {
 
-	public TeamSearchTerms(PortletRequest portletRequest) {
-		super(portletRequest);
+	@Override
+	protected boolean hasAccessPermissionDenied(
+			PermissionChecker permissionChecker, Group group, Portlet portlet)
+		throws Exception {
 
-		description = DAOParamUtil.getLike(portletRequest, DESCRIPTION);
-		name = DAOParamUtil.getLike(portletRequest, NAME);
+		if (group.isLayoutSetPrototype()) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

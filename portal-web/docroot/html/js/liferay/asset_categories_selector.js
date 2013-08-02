@@ -566,13 +566,11 @@ AUI.add(
 					_showSelectPopup: function(event) {
 						var instance = this;
 
-						event.domEvent.preventDefault();
-
 						instance._showPopup(event);
 
 						var popup = instance._popup;
 
-						popup.set('headerContent', '<h3>' + Liferay.Language.get('categories') + '</h3>');
+						popup.titleNode.html(Liferay.Language.get('categories'));
 
 						popup.entriesNode.addClass(CSS_TAGS_LIST);
 
