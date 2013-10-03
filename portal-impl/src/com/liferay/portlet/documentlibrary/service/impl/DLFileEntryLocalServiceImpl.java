@@ -773,6 +773,11 @@ public class DLFileEntryLocalServiceImpl
 
 		unlockFileEntry(dlFileEntry.getFileEntryId());
 
+		// Sync
+
+		dlAppHelperLocalService.registerDLSyncEventCallback(
+			DLSyncConstants.EVENT_DELETE, new LiferayFileEntry(dlFileEntry));
+
 		// File
 
 		try {
@@ -1291,8 +1296,8 @@ public class DLFileEntryLocalServiceImpl
 
 		if (checkedOut != hasLock) {
 			dlAppHelperLocalService.registerDLSyncEventCallback(
-				DLSyncConstants.EVENT_UPDATE, DLSyncConstants.TYPE_FILE,
-				fileEntryId);
+				DLSyncConstants.EVENT_UPDATE,
+				new LiferayFileEntry(dlFileEntry));
 		}
 
 		return hasLock;
