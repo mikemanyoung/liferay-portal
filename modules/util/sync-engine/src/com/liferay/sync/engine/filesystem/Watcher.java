@@ -131,32 +131,58 @@ public class Watcher implements Runnable {
 				Path childFilePath = parentFilePath.resolve(
 					pathImpl.toString());
 
-				if (((kind == StandardWatchEventKind.ENTRY_CREATE) &&
-					 isIgnoredFilePath(childFilePath)) ||
-					((kind == StandardWatchEventKind.ENTRY_MODIFY) &&
-					 Files.isDirectory(childFilePath))) {
+				if (kind == StandardWatchEventKind.ENTRY_CREATE) {
+					if ((i + 1) < watchEvents.size()) {
+						WatchEvent<Path> nextWatchEvent =
+							(WatchEvent<Path>)watchEvents.get(i + 1);
 
-					continue;
-				}
+						if ((nextWatchEvent != null) &&
+							((WatchEvent.Kind<?>)nextWatchEvent.kind() ==
+								StandardWatchEventKind.ENTRY_MODIFY)) {
 
-				if (kind == StandardWatchEventKind.ENTRY_DELETE) {
-					processMissingFilePath(childFilePath);
-				}
+							PathImpl nextPathImpl =
+								(PathImpl)nextWatchEvent.context();
 
-				fireWatchEventListener(childFilePath, watchEvent);
+							if (nextPathImpl != null) {
+								Path nextFilePath = parentFilePath.resolve(
+									nextPathImpl.toString());
 
-				if (_recursive &&
-					(kind == StandardWatchEventKind.ENTRY_CREATE)) {
-
-					try {
-						if (Files.isDirectory(
-								childFilePath, LinkOption.NOFOLLOW_LINKS)) {
-
-							registerFilePath(childFilePath, true);
+								if (childFilePath.equals(nextFilePath)) {
+									i++;
+								}
+							}
 						}
 					}
-					catch (IOException ioe) {
+
+					if (isIgnoredFilePath(childFilePath)) {
+						continue;
 					}
+
+					fireWatchEventListener(childFilePath, watchEvent);
+
+					if (_recursive) {
+						try {
+							if (Files.isDirectory(
+									childFilePath, LinkOption.NOFOLLOW_LINKS)) {
+
+								registerFilePath(childFilePath, true);
+							}
+						}
+						catch (IOException ioe) {
+						}
+					}
+				}
+				else if (kind == StandardWatchEventKind.ENTRY_DELETE) {
+					processMissingFilePath(childFilePath);
+
+					fireWatchEventListener(childFilePath, watchEvent);
+				}
+				else if (kind == StandardWatchEventKind.ENTRY_MODIFY) {
+					if (Files.isDirectory(childFilePath)) {
+						continue;
+					}
+
+					fireWatchEventListener(childFilePath, watchEvent);
 				}
 			}
 
