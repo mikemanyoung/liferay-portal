@@ -36,6 +36,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Shinn Lok
  */
@@ -63,6 +66,11 @@ public class UpgradeUtil {
 
 				Files.copy(inputStream, loggerConfigurationFilePath);
 			}
+
+			SyncPropService.updateSyncProp(
+				"buildNumber", ReleaseInfo.getBuildNumber());
+
+			return;
 		}
 		else if (buildNumber == ReleaseInfo.getBuildNumber()) {
 			return;
@@ -115,5 +123,8 @@ public class UpgradeUtil {
 			syncWatchEventPersistence.createTable();
 		}
 	}
+
+	private static final Logger _logger = LoggerFactory.getLogger(
+		UpgradeUtil.class);
 
 }
