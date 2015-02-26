@@ -277,33 +277,7 @@ public class SyncAccountService {
 
 		// Sync files
 
-		List<SyncFile> syncFiles = SyncFileService.findSyncFiles(syncAccountId);
-
-		for (SyncFile syncFile : syncFiles) {
-			String syncFileFilePathName = syncFile.getFilePathName();
-
-			syncFileFilePathName = syncFileFilePathName.replace(
-				sourceFilePathName, targetFilePathName);
-
-			syncFile.setFilePathName(syncFileFilePathName);
-
-			SyncFileService.update(syncFile);
-		}
-
-		// Sync sites
-
-		List<SyncSite> syncSites = SyncSiteService.findSyncSites(syncAccountId);
-
-		for (SyncSite syncSite : syncSites) {
-			String syncSiteFilePathName = syncSite.getFilePathName();
-
-			syncSiteFilePathName = syncSiteFilePathName.replace(
-				sourceFilePathName, targetFilePathName);
-
-			syncSite.setFilePathName(syncSiteFilePathName);
-
-			SyncSiteService.update(syncSite);
-		}
+		SyncFileService.renameSyncFiles(sourceFilePathName, targetFilePathName);
 
 		return syncAccount;
 	}
