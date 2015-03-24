@@ -56,6 +56,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 
@@ -88,17 +91,27 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 				SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
 					getSyncAccountId());
 
-				anonymousHttpClient.execute(
+				HttpResponse httpResponse = anonymousHttpClient.execute(
 					new HttpPost(
 						syncAccount.getUrl() + "/api/jsonws" + urlPath));
+
+				StatusLine statusLine = httpResponse.getStatusLine();
+
+				if (statusLine.getStatusCode() != HttpStatus.SC_OK) {
+					doCancel();
+				}
+
+				Handler<Void> handler = event.getHandler();
+
+				String response = getResponseString(httpResponse);
+
+				if (handler.handlePortalException(getException(response))) {
+					doCancel();
+				}
 			}
 
 			@Override
 			public void run() {
-				if (!_firedProcessingState) {
-					fireProcessingState();
-				}
-
 				SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
 					getSyncAccountId());
 
@@ -107,22 +120,29 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 					getSyncAccountId());
 
 				if ((syncAccount == null) ||
-					(syncAccount.getState() ==
-						SyncAccount.STATE_DISCONNECTED) ||
+					(syncAccount.getState() != SyncAccount.STATE_CONNECTED) ||
 					(syncSite == null) || !syncSite.isActive()) {
 
-					if (_firedProcessingState) {
-						fireProcessedState();
-					}
-
-					event.cancel();
-
-					_scheduledFuture.cancel(true);
+					doCancel();
 
 					return;
 				}
 
+				if (!_firedProcessingState) {
+					fireProcessingState();
+				}
+
 				super.run();
+			}
+
+			protected void doCancel() {
+				if (_firedProcessingState) {
+					fireProcessedState();
+				}
+
+				event.cancel();
+
+				_scheduledFuture.cancel(true);
 			}
 
 		};
