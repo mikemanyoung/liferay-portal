@@ -70,10 +70,28 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 	public GetSyncDLObjectUpdateHandler(final Event event) {
 		super(event);
 
-		GetSyncContextEvent getSyncContextHeartbeatEvent = 
+		GetSyncContextEvent getSyncContextHeartbeatEvent =
 			new GetSyncContextEvent(
-				event.getSyncAccountId(), 
+				event.getSyncAccountId(),
 				Collections.<String, Object>emptyMap()) {
+
+			@Override
+			public void executePost(
+					String urlPath, Map<String, Object> parameters)
+				throws Exception {
+
+				Session session = SessionManager.getSession(getSyncAccountId());
+
+				HttpClient anonymousHttpClient =
+					session.getAnonymousHttpClient();
+
+				SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
+					getSyncAccountId());
+
+				anonymousHttpClient.execute(
+					new HttpPost(
+						syncAccount.getUrl() + "/api/jsonws" + urlPath));
+			}
 
 			@Override
 			public void run() {
@@ -107,28 +125,10 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 				super.run();
 			}
 
-			@Override
-			public void executePost(
-					String urlPath, Map<String, Object> parameters)
-				throws Exception {
-
-				Session session = SessionManager.getSession(getSyncAccountId());
-
-				HttpClient anonymousHttpClient =
-					session.getAnonymousHttpClient();
-
-				SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
-					getSyncAccountId());
-
-				anonymousHttpClient.execute(
-					new HttpPost(
-						syncAccount.getUrl() + "/api/jsonws" + urlPath));
-			}
-
 		};
 
 		_scheduledFuture = _scheduledExecutorService.scheduleAtFixedRate(
-			getSyncContextHeartbeatEvent, 15, 5, TimeUnit.SECONDS);
+			getSyncContextHeartbeatEvent, 10, 5, TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -268,7 +268,7 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 					return FileVisitResult.CONTINUE;
 				}
 
-				});
+			});
 	}
 
 	protected void downloadFile(
