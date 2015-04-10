@@ -18,13 +18,17 @@ import groovy.lang.Closure;
 
 import java.io.File;
 
+import java.net.URL;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -113,6 +117,26 @@ public class GradleUtil {
 		project.apply(args);
 	}
 
+	public static void applyScript(Project project, String name, Object obj) {
+		Map<String, Object> args = new HashMap<>();
+
+		ClassLoader classLoader = GradleUtil.class.getClassLoader();
+
+		URL url = classLoader.getResource(name);
+
+		if (url == null) {
+			throw new GradleException("Unable to apply script " + name);
+		}
+
+		args.put("from", url);
+
+		if (obj != null) {
+			args.put("to", obj);
+		}
+
+		project.apply(args);
+	}
+
 	public static void executeIfEmpty(
 		final Configuration configuration, final Action<Configuration> action) {
 
@@ -177,6 +201,16 @@ public class GradleUtil {
 		return fileTree.matching(closure);
 	}
 
+	public static Project getProject(Project rootProject, File projectDir) {
+		for (Project project : rootProject.getAllprojects()) {
+			if (projectDir.equals(project.getProjectDir())) {
+				return project;
+			}
+		}
+
+		return null;
+	}
+
 	public static SourceSet getSourceSet(Project project, String name) {
 		JavaPluginConvention javaPluginConvention = getConvention(
 			project, JavaPluginConvention.class);
@@ -193,12 +227,52 @@ public class GradleUtil {
 		return taskContainer.getByName(name);
 	}
 
+	public static void removeDependencies(
+		Project project, String configurationName,
+		String[] dependencyNotations) {
+
+		Configuration configuration = getConfiguration(
+			project, configurationName);
+
+		Set<Dependency> dependencies = configuration.getDependencies();
+
+		Iterator<Dependency> iterator = dependencies.iterator();
+
+		while (iterator.hasNext()) {
+			Dependency dependency = iterator.next();
+
+			String dependencyNotation = _getDependencyNotation(dependency);
+
+			if (ArrayUtil.contains(dependencyNotations, dependencyNotation)) {
+				iterator.remove();
+			}
+		}
+	}
+
 	private static Dependency _addDependency(
 		Project project, String configurationName, Object dependencyNotation) {
 
 		DependencyHandler dependencyHandler = project.getDependencies();
 
 		return dependencyHandler.add(configurationName, dependencyNotation);
+	}
+
+	private static String _getDependencyNotation(Dependency dependency) {
+		StringBuilder sb = new StringBuilder();
+
+		if (Validator.isNotNull(dependency.getGroup())) {
+			sb.append(dependency.getGroup());
+			sb.append(":");
+		}
+
+		sb.append(dependency.getName());
+
+		if (Validator.isNotNull(dependency.getVersion())) {
+			sb.append(":");
+			sb.append(dependency.getVersion());
+		}
+
+		return sb.toString();
 	}
 
 }

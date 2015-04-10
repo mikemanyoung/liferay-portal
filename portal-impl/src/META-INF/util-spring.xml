@@ -52,7 +52,10 @@
 		<constructor-arg name="portalCacheManager">
 			<bean class="com.liferay.portal.cache.ehcache.EhcachePortalCacheManager">
 				<property name="clusterAware" value="true" />
-				<property name="configPropertyKey" value="ehcache.multi.vm.config.location" />
+				<property name="configFile">
+					<util:constant static-field="com.liferay.portal.util.PropsValues.EHCACHE_MULTI_VM_CONFIG_LOCATION" />
+				</property>
+				<property name="defaultConfigFile" value="/ehcache/liferay-multi-vm-clustered.xml" />
 				<property name="mpiOnly" value="true" />
 				<property name="name">
 					<util:constant static-field="com.liferay.portal.kernel.cache.PortalCacheManagerNames.MULTI_VM" />
@@ -67,7 +70,10 @@
 		<property name="singleVMPool" ref="com.liferay.portal.kernel.cache.SingleVMPool" />
 	</bean>
 	<bean id="com.liferay.portal.kernel.cache.SingleVMPortalCacheManager" class="com.liferay.portal.cache.ehcache.EhcachePortalCacheManager">
-		<property name="configPropertyKey" value="ehcache.single.vm.config.location" />
+		<property name="configFile">
+			<util:constant static-field="com.liferay.portal.util.PropsValues.EHCACHE_SINGLE_VM_CONFIG_LOCATION" />
+		</property>
+		<property name="defaultConfigFile" value="/ehcache/liferay-single-vm.xml" />
 		<property name="name">
 			<util:constant static-field="com.liferay.portal.kernel.cache.PortalCacheManagerNames.SINGLE_VM" />
 		</property>
@@ -1111,8 +1117,6 @@
 			<bean class="com.liferay.portlet.imagegallerydisplay.display.context.IGDisplayContextProviderImpl" />
 		</property>
 	</bean>
-	<bean id="com.liferay.portlet.journal.JournalArticleCustomAttributesDisplay" class="com.liferay.portlet.journal.JournalArticleCustomAttributesDisplay" />
-	<bean id="com.liferay.portlet.journal.JournalFolderCustomAttributesDisplay" class="com.liferay.portlet.journal.JournalFolderCustomAttributesDisplay" />
 	<bean id="com.liferay.portlet.journal.atom.JournalArticleAtomCollectionProvider" class="com.liferay.portlet.journal.atom.JournalArticleAtomCollectionProvider" />
 	<bean id="com.liferay.portlet.journal.lar.JournalArticleStagedModelDataHandler" class="com.liferay.portlet.journal.lar.JournalArticleStagedModelDataHandler" />
 	<bean id="com.liferay.portlet.journal.lar.JournalFeedStagedModelDataHandler" class="com.liferay.portlet.journal.lar.JournalFeedStagedModelDataHandler" />

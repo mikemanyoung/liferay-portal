@@ -23,12 +23,18 @@ import org.gradle.api.Project;
  */
 public class LiferayThemeExtension extends LiferayExtension {
 
-	public LiferayThemeExtension(Project project) throws Exception {
+	public LiferayThemeExtension(Project project) {
 		super(project);
 	}
 
 	public File getDiffsDir() {
-		return project.file(getDiffsDirName());
+		File diffsDir = project.file(getDiffsDirName());
+
+		if (diffsDir.exists()) {
+			return diffsDir;
+		}
+
+		return null;
 	}
 
 	public String getDiffsDirName() {

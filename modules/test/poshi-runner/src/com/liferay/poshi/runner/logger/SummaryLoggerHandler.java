@@ -15,10 +15,12 @@
 package com.liferay.poshi.runner.logger;
 
 import com.liferay.poshi.runner.PoshiRunnerContext;
-import com.liferay.poshi.runner.PoshiRunnerStackTraceUtil;
 import com.liferay.poshi.runner.PoshiRunnerVariablesUtil;
 import com.liferay.poshi.runner.util.StringUtil;
 import com.liferay.poshi.runner.util.Validator;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.dom4j.Element;
 
@@ -33,40 +35,25 @@ public final class SummaryLoggerHandler {
 
 	public static void failSummary(Element element, String message) {
 		if (_isCurrentMajorStep(element)) {
-			LoggerElement statusLoggerElement = new LoggerElement();
+			_failStepLoggerElement(_majorStepLoggerElement);
 
-			statusLoggerElement.setName("span");
-			statusLoggerElement.setText(" --> FAILED");
-
-			_majorStepLoggerElement.addChildLoggerElement(statusLoggerElement);
-
-			_majorStepsLoggerElement.addChildLoggerElement(
+			_majorStepLoggerElement.addChildLoggerElement(
 				_minorStepsLoggerElement);
 
-			LoggerElement errorLoggerElement = new LoggerElement();
+			if (Validator.isNotNull(message)) {
+				LoggerElement errorLoggerElement = new LoggerElement();
 
-			String stackTrace = PoshiRunnerStackTraceUtil.getStackTrace(
-				message);
+				errorLoggerElement.setText("ERROR: " + message);
 
-			stackTrace = StringUtil.replace(stackTrace, "\n", "<br />");
-			stackTrace = StringUtil.replace(stackTrace, "\"", "&quot;");
-
-			stackTrace += "<br /><br />";
-
-			errorLoggerElement.setText(stackTrace);
-
-			_majorStepsLoggerElement.addChildLoggerElement(errorLoggerElement);
+				_causeBodyLoggerElement.addChildLoggerElement(
+					errorLoggerElement);
+			}
 
 			_stopMajorStep();
 		}
 
 		if (_isCurrentMinorStep(element)) {
-			LoggerElement statusLoggerElement = new LoggerElement();
-
-			statusLoggerElement.setName("span");
-			statusLoggerElement.setText(" --> FAILED");
-
-			_minorStepLoggerElement.addChildLoggerElement(statusLoggerElement);
+			_failStepLoggerElement(_minorStepLoggerElement);
 
 			_stopMinorStep();
 		}
@@ -74,23 +61,13 @@ public final class SummaryLoggerHandler {
 
 	public static void passSummary(Element element) {
 		if (_isCurrentMajorStep(element)) {
-			LoggerElement statusLoggerElement = new LoggerElement();
-
-			statusLoggerElement.setName("span");
-			statusLoggerElement.setText(" --> PASSED");
-
-			_majorStepLoggerElement.addChildLoggerElement(statusLoggerElement);
+			_passStepLoggerElement(_majorStepLoggerElement);
 
 			_stopMajorStep();
 		}
 
 		if (_isCurrentMinorStep(element)) {
-			LoggerElement statusLoggerElement = new LoggerElement();
-
-			statusLoggerElement.setName("span");
-			statusLoggerElement.setText(" --> PASSED");
-
-			_minorStepLoggerElement.addChildLoggerElement(statusLoggerElement);
+			_passStepLoggerElement(_minorStepLoggerElement);
 
 			_stopMinorStep();
 		}
@@ -120,13 +97,38 @@ public final class SummaryLoggerHandler {
 		}
 	}
 
+	private static void _failStepLoggerElement(
+		LoggerElement stepLoggerElement) {
+
+		LoggerElement lineContainerLoggerElement =
+			stepLoggerElement.loggerElement("div");
+
+		lineContainerLoggerElement.addChildLoggerElement(
+			_getStatusLoggerElement("FAILED"));
+		lineContainerLoggerElement.setName("strong");
+	}
+
+	private static LoggerElement _getStatusLoggerElement(String status) {
+		LoggerElement statusLoggerElement = new LoggerElement();
+
+		statusLoggerElement.setName("span");
+		statusLoggerElement.setText(" --> " + status);
+
+		return statusLoggerElement;
+	}
+
 	private static LoggerElement _getStepLoggerElement(Element element)
 		throws Exception {
 
 		LoggerElement stepLoggerElement = new LoggerElement();
 
 		stepLoggerElement.setName("li");
-		stepLoggerElement.setText(_getSummary(element));
+
+		LoggerElement lineContainerLoggerElement = new LoggerElement();
+
+		lineContainerLoggerElement.setText(_getSummary(element));
+
+		stepLoggerElement.addChildLoggerElement(lineContainerLoggerElement);
 
 		return stepLoggerElement;
 	}
@@ -166,7 +168,7 @@ public final class SummaryLoggerHandler {
 		}
 
 		if (summary != null) {
-			return PoshiRunnerVariablesUtil.replaceCommandVars(summary);
+			return _replaceCommandVars(summary, element);
 		}
 
 		return null;
@@ -243,6 +245,54 @@ public final class SummaryLoggerHandler {
 		return true;
 	}
 
+	private static void _passStepLoggerElement(
+		LoggerElement stepLoggerElement) {
+
+		LoggerElement lineContainerLoggerElement =
+			stepLoggerElement.loggerElement("div");
+
+		lineContainerLoggerElement.addChildLoggerElement(
+			_getStatusLoggerElement("PASSED"));
+	}
+
+	private static String _replaceCommandVars(String token, Element element)
+		throws Exception {
+
+		Matcher matcher = _pattern.matcher(token);
+
+		while (matcher.find() &&
+			   PoshiRunnerVariablesUtil.containsKeyInCommandMap(
+				   matcher.group(1))) {
+
+			String varName = matcher.group(1);
+
+			String varValue = PoshiRunnerVariablesUtil.getValueFromCommandMap(
+				varName);
+
+			if ((element.attributeValue("function") != null) &&
+				varName.startsWith("locator")) {
+
+				String locator = element.attributeValue(varName);
+
+				if (Validator.isNotNull(locator) && locator.contains("#")) {
+					StringBuilder sb = new StringBuilder();
+
+					sb.append("<em title=\"");
+					sb.append(varValue);
+					sb.append("\">");
+					sb.append(locator.substring(locator.indexOf("#") + 1));
+					sb.append("</em>");
+
+					varValue = sb.toString();
+				}
+			}
+
+			token = StringUtil.replace(token, matcher.group(), varValue);
+		}
+
+		return token;
+	}
+
 	private static void _startMajorStep(Element element) {
 		_majorStepElement = element;
 	}
@@ -264,6 +314,8 @@ public final class SummaryLoggerHandler {
 		_minorStepLoggerElement = null;
 	}
 
+	private static final LoggerElement _causeBodyLoggerElement =
+		new LoggerElement("cause-body");
 	private static Element _majorStepElement = null;
 	private static LoggerElement _majorStepLoggerElement = null;
 	private static final LoggerElement _majorStepsLoggerElement =
@@ -271,5 +323,6 @@ public final class SummaryLoggerHandler {
 	private static Element _minorStepElement;
 	private static LoggerElement _minorStepLoggerElement;
 	private static LoggerElement _minorStepsLoggerElement;
+	private static final Pattern _pattern = Pattern.compile("\\$\\{([^}]*)\\}");
 
 }

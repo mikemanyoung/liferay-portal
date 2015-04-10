@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.process.ClassPathUtil;
 import com.liferay.portal.kernel.servlet.DirectServletRegistryUtil;
 import com.liferay.portal.kernel.servlet.SerializableSessionAttributeListener;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
-import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClassLoaderPool;
@@ -155,13 +154,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		}
 
 		try {
-			SettingsFactoryUtil.clearCache();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		try {
 			super.contextDestroyed(servletContextEvent);
 
 			try {
@@ -170,6 +162,8 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			catch (Exception e) {
 				_log.error(e, e);
 			}
+
+			_arrayApplicationContext.close();
 		}
 		finally {
 			PortalContextLoaderLifecycleThreadLocal.setDestroying(false);
@@ -243,15 +237,15 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		try {
 			ModuleFrameworkUtilAdapter.initFramework();
 
-			ArrayApplicationContext applicationContext =
-				new ArrayApplicationContext(
-					PropsValues.SPRING_INFRASTRUCTURE_CONFIGS);
+			_arrayApplicationContext = new ArrayApplicationContext(
+				PropsValues.SPRING_INFRASTRUCTURE_CONFIGS);
 
 			servletContext.setAttribute(
 				PortalApplicationContext.PARENT_APPLICATION_CONTEXT,
-				applicationContext);
+				_arrayApplicationContext);
 
-			ModuleFrameworkUtilAdapter.registerContext(applicationContext);
+			ModuleFrameworkUtilAdapter.registerContext(
+				_arrayApplicationContext);
 
 			ModuleFrameworkUtilAdapter.startFramework();
 		}
@@ -396,6 +390,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		}
 	}
 
+	private ArrayApplicationContext _arrayApplicationContext;
 	private IndexerPostProcessorRegistry _indexerPostProcessorRegistry;
 	private SchedulerEntryRegistry _schedulerEntryRegistry;
 	private ServiceWrapperRegistry _serviceWrapperRegistry;

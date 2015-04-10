@@ -3919,7 +3919,7 @@ osb.lcs.portlet.oauth.consumer.secret=${osb.lcs.portlet.oauth.consumer.secret}</
 			<isset property="marketplace.email.address.5" />
 			<then>
 				<echo file="portal-web/test/test-portal-web-ext.properties" append="true">
-					marketplace.email.address.5=${marketplace.email.password.5}
+					marketplace.email.address.5=${marketplace.email.address.5}
 				</echo>
 			</then>
 		</if>
@@ -5767,6 +5767,8 @@ Please set "ie.driver.zip" in test.properties to point to "IEDriverServer_x64_2.
 	</target>
 
 	<target name="test-class-group">
+		<antcall target="clean-up-java-processes" inheritAll="false" />
+
 		<ant dir="portal-service" target="test-class-group" inheritAll="false" />
 
 		<ant dir="portal-impl" target="test-class-group" inheritAll="false" />
