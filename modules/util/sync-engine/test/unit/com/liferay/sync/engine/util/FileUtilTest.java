@@ -161,7 +161,8 @@ public class FileUtilTest {
 
 		Path realFilePathFileName = realFilePath.getFileName();
 
-//		Assert.assertFalse(sourceFilePath.endsWith(realFilePathFileName));
+		System.out.println("## " + realFilePathFileName);
+		Assert.assertFalse(sourceFilePath.endsWith(realFilePathFileName));
 		Assert.assertTrue(targetFilePath.endsWith(realFilePathFileName));
 	}
 
