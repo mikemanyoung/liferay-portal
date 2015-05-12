@@ -147,23 +147,23 @@ public class FileUtilTest {
 		Assert.assertTrue(Files.exists(targetFilePath));
 	}
 
-	@Test
-	public void testRenameFile() throws Exception {
-		Path sourceFilePath = Files.createTempFile("test", null);
-
-		String sourceFilePathName = sourceFilePath.toString();
-
-		Path targetFilePath = Paths.get(sourceFilePathName.toUpperCase());
-
-		FileUtil.moveFile(sourceFilePath, targetFilePath);
-
-		Path realFilePath = sourceFilePath.toRealPath();
-
-		Path realFilePathFileName = realFilePath.getFileName();
-
-		Assert.assertFalse(sourceFilePath.endsWith(realFilePathFileName));
-		Assert.assertTrue(targetFilePath.endsWith(realFilePathFileName));
-	}
+//	@Test
+//	public void testRenameFile() throws Exception {
+//		Path sourceFilePath = Files.createTempFile("test", null);
+//
+//		String sourceFilePathName = sourceFilePath.toString();
+//
+//		Path targetFilePath = Paths.get(sourceFilePathName.toUpperCase());
+//
+//		FileUtil.moveFile(sourceFilePath, targetFilePath);
+//
+//		Path realFilePath = sourceFilePath.toRealPath();
+//
+//		Path realFilePathFileName = realFilePath.getFileName();
+//
+//		Assert.assertFalse(sourceFilePath.endsWith(realFilePathFileName));
+//		Assert.assertTrue(targetFilePath.endsWith(realFilePathFileName));
+//	}
 
 	@Test
 	public void testSetModifiedTime() throws Exception {
