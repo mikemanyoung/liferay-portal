@@ -157,7 +157,7 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 
 		};
 
-		_scheduledFuture = _scheduledExecutorService.scheduleAtFixedRate(
+		_scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(
 			getSyncContextEvent, 10, 5, TimeUnit.SECONDS);
 	}
 
