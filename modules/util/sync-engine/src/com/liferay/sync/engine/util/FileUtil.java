@@ -398,7 +398,7 @@ public class FileUtil {
 					modifiedTime = modifiedTime / 1000 * 1000;
 				}
 
-				if ((fileTime.toMillis() <= modifiedTime) &&
+				if ((fileTime.toMillis() < modifiedTime) &&
 					FileKeyUtil.hasFileKey(
 						filePath, syncFile.getSyncFileId())) {
 
