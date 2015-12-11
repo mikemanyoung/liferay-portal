@@ -46,6 +46,8 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.io.FilenameUtils;
 
+import org.h2.jdbc.JdbcSQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,7 +199,16 @@ public class SyncWatchEventProcessor implements Runnable {
 					}
 					catch (Exception e) {
 						if (_logger.isTraceEnabled()) {
-							_logger.trace(e.getMessage(), e);
+							String message = e.getMessage();
+
+							if ((e instanceof JdbcSQLException) &&
+								message.contains(
+									"Unique index or primary key violation")) {
+
+								return;
+							}
+
+							_logger.trace(message, e);
 						}
 					}
 				}
