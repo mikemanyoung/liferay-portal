@@ -492,17 +492,23 @@ public class SyncFileService {
 		}
 	}
 
-	public static boolean hasChildState(String parentFilePathName, int state) {
+	public static boolean hasSyncFiles(String parentFilePathName, int state) {
 		try {
-			return _syncFilePersistence.containsChildState(
+			SyncFile syncFile = _syncFilePersistence.fetchByPF_S_First(
 				parentFilePathName, state);
+
+			if (syncFile == null) {
+				return false;
+			}
+
+			return true;
 		}
 		catch (SQLException sqle) {
 			if (_logger.isDebugEnabled()) {
 				_logger.debug(sqle.getMessage(), sqle);
 			}
 
-			return false;
+			return true;
 		}
 	}
 
