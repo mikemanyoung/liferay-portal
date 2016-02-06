@@ -17,6 +17,7 @@ package com.liferay.sync.engine.documentlibrary.handler;
 import com.liferay.sync.engine.documentlibrary.event.Event;
 import com.liferay.sync.engine.model.SyncFile;
 import com.liferay.sync.engine.service.SyncFileService;
+import com.liferay.sync.engine.util.IODeltaUtil;
 import com.liferay.sync.engine.util.JSONUtil;
 
 import java.net.SocketException;
@@ -83,6 +84,10 @@ public class AddFileFolderHandler extends BaseJSONHandler {
 		localSyncFile.setVersionId(remoteSyncFile.getVersionId());
 
 		SyncFileService.update(localSyncFile);
+
+		if (localSyncFile.isFile()) {
+			IODeltaUtil.checksums(localSyncFile);
+		}
 	}
 
 	private static final Logger _logger = LoggerFactory.getLogger(

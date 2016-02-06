@@ -164,7 +164,7 @@ public class UpgradeProcess_3_0_10 extends UpgradeProcess {
 				}
 
 				SyncFileService.addSyncFile(
-					null, null, false, null, syncSite.getFilePathName(), null,
+					null, null, null, syncSite.getFilePathName(), null,
 					syncSite.getName(), 0, syncSite.getGroupId(), 0,
 					SyncFile.STATE_SYNCED, syncSite.getSyncAccountId(),
 					SyncFile.TYPE_SYSTEM);
