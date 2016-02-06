@@ -41,7 +41,7 @@ public class SyncFileTestUtil {
 		Files.createFile(Paths.get(filePathName));
 
 		SyncFile syncFile = SyncFileService.addSyncFile(
-			null, null, true, null, filePathName, null, null, parentFolderId,
+			null, null, null, filePathName, null, null, parentFolderId,
 			repositoryId, SyncFile.STATE_SYNCED, 0, syncAccountId,
 			SyncFile.TYPE_FILE);
 
@@ -77,7 +77,7 @@ public class SyncFileTestUtil {
 		Files.createDirectory(Paths.get(filePathName));
 
 		SyncFile syncFile = SyncFileService.addSyncFile(
-			null, null, false, null, filePathName, null, null, parentFolderId,
+			null, null, null, filePathName, null, null, parentFolderId,
 			repositoryId, SyncFile.STATE_SYNCED, 0, syncAccountId,
 			SyncFile.TYPE_FOLDER);
 

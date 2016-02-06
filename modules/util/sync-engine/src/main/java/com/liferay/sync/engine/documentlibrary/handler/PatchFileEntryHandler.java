@@ -17,6 +17,7 @@ package com.liferay.sync.engine.documentlibrary.handler;
 import com.liferay.sync.engine.documentlibrary.event.Event;
 import com.liferay.sync.engine.model.SyncFile;
 import com.liferay.sync.engine.service.SyncFileService;
+import com.liferay.sync.engine.util.IODeltaUtil;
 import com.liferay.sync.engine.util.JSONUtil;
 
 /**
@@ -43,6 +44,8 @@ public class PatchFileEntryHandler extends BaseJSONHandler {
 		localSyncFile.setVersionId(remoteSyncFile.getVersionId());
 
 		SyncFileService.update(localSyncFile);
+
+		IODeltaUtil.checksums(localSyncFile);
 	}
 
 }
