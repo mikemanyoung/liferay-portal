@@ -240,36 +240,31 @@ public class SyncSiteService {
 		_syncSitePersistence.registerModelListener(modelListener);
 	}
 
-	public static SyncSite setFilePathName(long syncSiteId, String name) {
+	public static SyncSite setFilePathName(
+		long syncSiteId, String targetFilePathName) {
 
 		// Sync site
 
 		SyncSite syncSite = fetchSyncSite(syncSiteId);
 
-		String filePathName = syncSite.getFilePathName();
+		String sourceFilePathName = syncSite.getFilePathName();
 
-		SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
-			syncSite.getSyncAccountId());
-
-		syncSite.setFilePathName(
-			FileUtil.getFilePathName(syncAccount.getFilePathName(), name));
+		syncSite.setFilePathName(targetFilePathName);
 
 		update(syncSite);
 
 		// Sync file
 
-		SyncFile syncFile = SyncFileService.fetchSyncFile(filePathName);
+		SyncFile syncFile = SyncFileService.fetchSyncFile(targetFilePathName);
 
-		syncFile.setName(name);
-		syncFile.setFilePathName(filePathName);
+		syncFile.setName(syncSite.getName());
+		syncFile.setFilePathName(targetFilePathName);
 
 		SyncFileService.update(syncFile);
 
 		// Sync files
 
-		SyncFileService.renameSyncFiles(
-			filePathName,
-			FileUtil.getFilePathName(syncAccount.getFilePathName(), name));
+		SyncFileService.renameSyncFiles(sourceFilePathName, targetFilePathName);
 
 		return syncSite;
 	}
