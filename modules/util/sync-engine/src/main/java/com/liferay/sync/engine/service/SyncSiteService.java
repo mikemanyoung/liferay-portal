@@ -246,30 +246,30 @@ public class SyncSiteService {
 
 		SyncSite syncSite = fetchSyncSite(syncSiteId);
 
-		String filePathName = syncSite.getFilePathName();
+		String sourceFilePathName = syncSite.getFilePathName();
 
 		SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
 			syncSite.getSyncAccountId());
 
-		syncSite.setFilePathName(
-			FileUtil.getFilePathName(syncAccount.getFilePathName(), name));
+		String targetFilePathName = FileUtil.getFilePathName(
+			syncAccount.getFilePathName(), name);
+
+		syncSite.setFilePathName(targetFilePathName);
 
 		update(syncSite);
 
 		// Sync file
 
-		SyncFile syncFile = SyncFileService.fetchSyncFile(filePathName);
+		SyncFile syncFile = SyncFileService.fetchSyncFile(targetFilePathName);
 
 		syncFile.setName(name);
-		syncFile.setFilePathName(filePathName);
+		syncFile.setFilePathName(targetFilePathName);
 
 		SyncFileService.update(syncFile);
 
 		// Sync files
 
-		SyncFileService.renameSyncFiles(
-			filePathName,
-			FileUtil.getFilePathName(syncAccount.getFilePathName(), name));
+		SyncFileService.renameSyncFiles(sourceFilePathName, targetFilePathName);
 
 		return syncSite;
 	}
