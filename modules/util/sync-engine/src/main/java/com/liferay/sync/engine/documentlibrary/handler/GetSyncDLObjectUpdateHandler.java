@@ -84,10 +84,8 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 					String urlPath, Map<String, Object> parameters)
 				throws Exception {
 
-				Session session = SessionManager.getSession(getSyncAccountId());
-
 				HttpClient anonymousHttpClient =
-					session.getAnonymousHttpClient();
+					Session.getAnonymousHttpClient();
 
 				SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
 					getSyncAccountId());
