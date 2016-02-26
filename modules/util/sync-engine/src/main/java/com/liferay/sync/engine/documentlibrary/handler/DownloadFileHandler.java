@@ -259,7 +259,6 @@ public class DownloadFileHandler extends BaseHandler {
 
 			executorService.execute(runnable);
 		}
-
 		catch (FileSystemException fse) {
 			downloadedFilePathNames.remove(filePath.toString());
 
