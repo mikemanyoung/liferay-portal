@@ -1227,14 +1227,14 @@
 
 		<execute function="Click" locator1="Icon#MOVE_TO_RECYCLE_BIN" />
 
+		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+
 		<if>
 			<condition function="IsElementNotPresent" locator1="DocumentsAndMedia#ICON_DOCUMENT_GENERIC" />
 			<then>
 				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no documents or media files in this folder." />
 			</then>
 		</if>
-
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
 	</command>
 
 	<command name="moveToSubFolderCP">
@@ -1536,12 +1536,8 @@
 	</command>
 
 	<command name="tearDownPG">
-		<execute macro="Page#gotoPG">
-			<var name="defaultURL" value="${defaultURL}" />
-			<var name="nodePort" value="${nodePort}" />
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="${pageName}" />
-			<var name="soDashboard" value="${soDashboard}" />
-			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<if>
@@ -1585,7 +1581,7 @@
 				<execute function="AssertElementPresent" locator1="SODocuments#DOCUMENT_BREADCRUMBS" />
 			</then>
 			<else>
-				<execute function="AssertTextEquals" locator1="Button#BACK" value1="Back" />
+				<execute function="AssertElementPresent" locator1="Icon#ANGLE_LEFT_BACK" />
 			</else>
 		</if>
 
@@ -2347,14 +2343,9 @@
 		<execute function="AssertVisible" locator1="Button#MOVE"  />
 		<execute function="AssertVisible" locator1="Button#RECYCLE_BIN" />
 
-		<execute macro="Page#gotoPG">
-			<var name="defaultURL" value="${defaultURL}" />
-			<var name="nodePort" value="${nodePort}" />
+		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Staging Test Page" />
 			<var name="siteName" value="Site Name" />
-			<var name="siteURL" value="true" />
-			<var name="soDashboard" value="${soDashboard}" />
-			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<execute function="AssertElementNotPresent" locator1="Portlet#ICON_PLUS_SIGN" />
