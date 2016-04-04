@@ -244,7 +244,7 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 			"com.liferay.portal.test", "default");
 		GradleUtil.addDependency(
 			project, PORTAL_TEST_CONFIGURATION_NAME, "com.liferay.portal",
-			"com.liferay.portal.test.internal", "default");
+			"com.liferay.portal.test.integration", "default");
 	}
 
 	protected void addDependenciesTestCompile(Project project) {
@@ -586,9 +586,8 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 					String[] arguments;
 
 					if (excludeUpdateFileVersions) {
-						arguments = new String[] {
-							"-x", UPDATE_FILE_VERSIONS_TASK_NAME
-						};
+						arguments =
+							new String[] {"-x", UPDATE_FILE_VERSIONS_TASK_NAME};
 					}
 					else {
 						arguments = new String[0];
@@ -977,8 +976,9 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 
 					String projectPath = project.getPath();
 
-					if ((gitRepoDir == null) &&
-						!projectPath.startsWith(":core:")) {
+					if (!projectPath.startsWith(":apps:") &&
+						!projectPath.startsWith(":core:") &&
+						!projectPath.startsWith(":ee:")) {
 
 						return true;
 					}
