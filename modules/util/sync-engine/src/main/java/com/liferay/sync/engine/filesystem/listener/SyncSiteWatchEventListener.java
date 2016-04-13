@@ -33,8 +33,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import java.util.ArrayList;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +90,7 @@ public class SyncSiteWatchEventListener extends BaseWatchEventListener {
 					}
 
 					SyncSiteService.activateSyncSite(
-						syncSite.getSyncSiteId(), new ArrayList<SyncFile>(),
+						syncSite.getSyncSiteId(), Collections.emptyList(),
 						false);
 				}
 
