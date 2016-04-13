@@ -43,13 +43,15 @@ public class SyncSiteWatchEventListenerTest extends BaseTestCase {
 			10158, FileUtil.getFilePathName(filePathName, "test-site1"), 10185,
 			syncAccount.getSyncAccountId());
 
-		SyncSiteService.activateSyncSite(_syncSite1.getSyncSiteId(), true);
+		SyncSiteService.activateSyncSite(
+			_syncSite1.getSyncSiteId(), Collections.emptyList(), true);
 
 		_syncSite2 = SyncSiteTestUtil.addSyncSite(
 			10158, FileUtil.getFilePathName(filePathName, "test-site2"), 10186,
 			syncAccount.getSyncAccountId());
 
-		SyncSiteService.activateSyncSite(_syncSite2.getSyncSiteId(), true);
+		SyncSiteService.activateSyncSite(
+			_syncSite2.getSyncSiteId(), Collections.emptyList(), true);
 	}
 
 	@After

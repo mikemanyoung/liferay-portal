@@ -90,7 +90,8 @@ public class SyncSiteWatchEventListener extends BaseWatchEventListener {
 					}
 
 					SyncSiteService.activateSyncSite(
-						syncSite.getSyncSiteId(), false);
+						syncSite.getSyncSiteId(), Collections.emptyList(),
+						false);
 				}
 
 				return;
