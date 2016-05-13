@@ -156,7 +156,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	public static final String COPY_LIBS_TASK_NAME = "copyLibs";
 
 	public static final String DEFAULT_REPOSITORY_URL =
-		"http://cdn.repository.liferay.com/nexus/content/groups/public";
+		"https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/" +
+			"public";
 
 	public static final String INSTALL_CACHE_TASK_NAME = "installCache";
 
@@ -266,8 +267,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 					configureLocalPortalTool(
 						project, portalRootDir,
 						ServiceBuilderPlugin.CONFIGURATION_NAME,
-						ServiceBuilderDefaultsPlugin.PORTAL_TOOL_NAME,
-						"portal-tools-service-builder");
+						ServiceBuilderDefaultsPlugin.PORTAL_TOOL_NAME);
 				}
 
 			});
@@ -1352,7 +1352,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 	protected void configureLocalPortalTool(
 		Project project, File portalRootDir, String configurationName,
-		String portalToolName, String portalToolDirName) {
+		String portalToolName) {
 
 		if (portalRootDir == null) {
 			return;
@@ -1369,7 +1369,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		configuration.exclude(args);
 
 		File dir = new File(
-			portalRootDir, "tools/sdk/tmp/portal-tools/" + portalToolDirName);
+			portalRootDir, "tools/sdk/dependencies/" + portalToolName + "/lib");
 
 		FileTree fileTree = FileUtil.getJarsFileTree(project, dir);
 
@@ -1511,12 +1511,19 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	protected void configureTaskBaseline(BaselineTask baselineTask) {
 		Project project = baselineTask.getProject();
 
-		boolean reportDiff = false;
-
 		String reportLevel = GradleUtil.getProperty(
 			project, "baseline.jar.report.level", "standard");
 
-		if (reportLevel.equals("diff") || reportLevel.equals("persist")) {
+		boolean reportLevelIsDiff = reportLevel.equals("diff");
+		boolean reportLevelIsPersist = reportLevel.equals("persist");
+
+		if (reportLevelIsPersist && FileUtil.exists(project, "bnd.bnd")) {
+			baselineTask.setBndFile("bnd.bnd");
+		}
+
+		boolean reportDiff = false;
+
+		if (reportLevelIsDiff || reportLevelIsPersist) {
 			reportDiff = true;
 		}
 

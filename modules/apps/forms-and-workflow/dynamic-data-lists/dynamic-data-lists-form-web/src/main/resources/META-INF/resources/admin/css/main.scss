@@ -312,14 +312,20 @@ $horizontal-spacing: 35px;
 
 		.settings-toggler {
 			background-color: #F5F8FA;
-			bottom: 81px;
 			color: #879CB5;
-			display: block;
 			font-weight: 500;
 			padding: 18px $horizontal-spacing;
 			position: static;
-			text-decoration: none;
-			width: auto;
+			text-align: left;
+			width: 100%;
+
+			.settings-toggle-label {
+				float: left;
+			}
+
+			.settings-toggle-icon {
+				float: right;
+			}
 		}
 	}
 
@@ -524,6 +530,10 @@ $horizontal-spacing: 35px;
 		h5,
 		h6 {
 			margin: 0;
+		}
+
+		.ae-placeholder:empty:before {
+			content: attr(data-placeholder);
 		}
 
 		.alloy-editor.alloy-editor-placeholder,
@@ -997,6 +1007,14 @@ $horizontal-spacing: 35px;
 		font-size: 11px;
 	}
 
+	input.toggle-switch {
+		display: none;
+
+		&:disabled ~ .toggle-switch-bar {
+			opacity: 1;
+		}
+	}
+
 	.layout-builder-remove-row-button {
 		background: #FFF;
 		border: 1px solid #65B6F0;
@@ -1053,10 +1071,6 @@ $horizontal-spacing: 35px;
 
 	.liferay-ddm-form-renderer-wizard-navigation-allowed > li {
 		cursor: pointer;
-	}
-
-	.toggle-switch {
-		display: none;
 	}
 }
 

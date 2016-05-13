@@ -142,7 +142,7 @@
 </tr>
 <tr>
 	<td>ICON_FOLDER_CHECKBOX</td>
-	<td>//li[contains(@data-title,'${key_dmFolderName}')]//input</td>
+	<td>//li[contains(@data-title,'${key_dmFolderName}')]//label/input</td>
 	<td></td>
 </tr>
 <tr>
@@ -365,6 +365,17 @@
 <tr>
 	<td>SEARCH_PARENT_FOLDER</td>
 	<td>//a[@class='entry-link' and contains(.,'${dmDocumentTitle}')]//dd</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--REPOSITORY-->
+<tr>
+	<td>REPOSITORY_FOLDER_NAME_DESCRIPTIVE_VIEW</td>
+	<td>//a[contains(.,'${key_dmRepositoryName}')]</td>
 	<td></td>
 </tr>
 </tbody>

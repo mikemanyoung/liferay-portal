@@ -163,21 +163,16 @@
 	</command>
 
 	<command name="_exportSite">
+		<if>
+			<isset var="larFileName" />
+			<then>
+				<execute function="Type" locator1="SitePagesExport#EXPORT_PROCESS_NAME" value1="${larFileName}" />
+			</then>
+		</if>
+
 		<execute function="AssertClick" locator1="SitePagesExport#EXPORT_BUTTON" value1="Export" />
 
 		<execute function="AssertTextEquals" locator1="SitePagesExport#CURRENT_AND_PREVIOUS_STATUS" value1="Successful" />
-
-		<var method="selenium#getText('//ul/li/div/h5')" name="valueName" />
-
-		<echo message="value name ${valueName}" />
-
-		<var group="1" input="${valueName}" name="larFileName" pattern="([a-zA-z0-9_.-]*)[(0-9KB)]*" />
-
-		<echo message="import file name ${larFileName}" />
-
-		<execute function="Click" locator1="SitePagesExport#CURRENT_AND_PREVIOUS_DOWNLOAD" />
-
-		<execute function="DownloadTempFile" />
 	</command>
 
 	<command name="_gotoExportImport">
@@ -191,7 +186,7 @@
 
 	<command name="_gotoExportSite">
 		<if>
-			<isset var="siteName" />
+			<isset var="siteScopeName" />
 			<then>
 				<execute macro="ProductMenu#gotoSite">
 					<var name="site" value="${siteScopeName}" />
@@ -344,8 +339,12 @@
 		<execute function="AssertClick" locator1="SitePagesImport#SELECT_FILE_BUTTON" value1="Select File" />
 
 		<execute function="SikuliClick" locator1="OS#FILE_DIALOG_BOX_TYPE_FILE_NAME_ICON_PNG" />
-		<execute function="SikuliUploadTempFile" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${larFileName}" />
+
 		<execute function="Pause" locator1="5000" />
+
+		<execute function="SikuliUploadTempFile" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${larFileName}" />
+
+		<execute function="Pause" locator1="60000" />
 
 		<if>
 			<isset var="importValidationMissingItem" />
@@ -487,6 +486,14 @@
 		</execute>
 	</command>
 
+	<command name="gotoExport">
+		<execute macro="LAR#_gotoExportSite">
+			<var name="siteScopeName" value="${siteScopeName}" />
+		</execute>
+
+		<execute function="Click" locator1="SitePagesExport#CUSTOM_EXPORT_BUTTON" />
+	</command>
+
 	<command name="gotoExportTemplateCP">
 		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
 
@@ -569,10 +576,6 @@
 	</command>
 
 	<command name="setupContentTargeting" >
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
-
 		<if>
 			<equals arg1="${stagingSetup}" arg2="true" />
 			<then>

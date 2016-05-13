@@ -399,6 +399,8 @@
 
 		<execute macro="Navigator#gotoStagedView" />
 
+		<execute function="Pause" locator1="30000" />
+
 		<execute macro="ProductMenu#gotoSitesPublishing">
 			<var name="portlet" value="Staging" />
 		</execute>
@@ -711,6 +713,8 @@
 		</execute>
 
 		<execute macro="Navigator#gotoStagedView" />
+
+		<execute function="Pause" locator1="30000" />
 
 		<execute macro="ProductMenu#gotoSitesPublishing">
 			<var name="portlet" value="Staging" />
@@ -1354,9 +1358,12 @@
 			<var name="userLoginFullName" value="userfn userln" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="site" value="Community Site Name" />
+		<execute macro="Navigator#gotoSitePage">
+			<var name="pageName" value="Home" />
+			<var name="siteName" value="Community Site Name" />
 		</execute>
+
+		<execute macro="Navigator#gotoStagedView" />
 
 		<execute macro="SitePageNavigator#gotoEditPage">
 			<var name="page" value="Home" />
@@ -1631,14 +1638,16 @@
 			<var name="sitePagesVariationName" value="Empty Variation" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
+		<execute macro="Navigator#gotoSitePage">
+			<var name="pageName" value="Home" />
+			<var name="siteName" value="Community Site Name" />
 		</execute>
 
 		<execute macro="Page#add">
 			<var name="pageName" value="Empty Page Name" />
 			<var name="pageStaging" value="true" />
 			<var name="siteName" value="Community Site Name" />
+			<var name="siteScopeSelected" value="true" />
 		</execute>
 
 		<execute macro="Staging#viewSitePagesVariationPG">
@@ -3597,6 +3606,8 @@
 			<var name="portletName" value="Web Content Display" />
 		</execute>
 
+		<execute function="Pause" locator1="3000" />
+
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Site Name" />
 		</execute>
@@ -3713,7 +3724,7 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
-		<execute function="Pause" locator1="3000" />
+		<execute function="Pause" locator1="5000" />
 
 		<var name="key_webContentTitle" value="Web Content Title" />
 
@@ -4021,6 +4032,8 @@
 		</execute>
 
 		<execute macro="Navigator#gotoStagedView" />
+
+		<execute function="Pause" locator1="30000" />
 
 		<execute macro="ProductMenu#gotoSitesPublishing">
 			<var name="portlet" value="Staging" />
@@ -4391,6 +4404,7 @@
 		<execute macro="Page#add">
 			<var name="pageName" value="Test Page Name" />
 			<var name="pageStaging" value="true" />
+			<var name="siteScopeSelected" value="true" />
 		</execute>
 
 		<execute macro="Navigator#gotoStagedSitePage">
@@ -4411,7 +4425,7 @@
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
-		<execute macro="User#deleteCP">
+		<execute macro="User#deactivateCP">
 			<var name="userFirstName" value="userfn" />
 		</execute>
 
@@ -4423,6 +4437,8 @@
 		<execute function="Click" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
 
 		<execute function="Click" locator1="Staging#HISTORY_BUTTON" />
+
+		<execute function="SelectFrame" locator1="IFrame#METADATA_SETS_IFRAME" />
 
 		<var locator="Staging#HISTORY_VERSION" name="historyVersion" />
 
