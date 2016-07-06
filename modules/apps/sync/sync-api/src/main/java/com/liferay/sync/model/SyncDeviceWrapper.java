@@ -69,6 +69,7 @@ public class SyncDeviceWrapper implements SyncDevice, ModelWrapper<SyncDevice> {
 		attributes.put("type", getType());
 		attributes.put("buildNumber", getBuildNumber());
 		attributes.put("featureSet", getFeatureSet());
+		attributes.put("loginIP", getLoginIP());
 		attributes.put("status", getStatus());
 
 		return attributes;
@@ -134,6 +135,12 @@ public class SyncDeviceWrapper implements SyncDevice, ModelWrapper<SyncDevice> {
 
 		if (featureSet != null) {
 			setFeatureSet(featureSet);
+		}
+
+		String loginIP = (String)attributes.get("loginIP");
+
+		if (loginIP != null) {
+			setLoginIP(loginIP);
 		}
 
 		Integer status = (Integer)attributes.get("status");
@@ -231,6 +238,16 @@ public class SyncDeviceWrapper implements SyncDevice, ModelWrapper<SyncDevice> {
 	@Override
 	public java.lang.Object clone() {
 		return new SyncDeviceWrapper((SyncDevice)_syncDevice.clone());
+	}
+
+	/**
+	* Returns the login i p of this sync device.
+	*
+	* @return the login i p of this sync device
+	*/
+	@Override
+	public java.lang.String getLoginIP() {
+		return _syncDevice.getLoginIP();
 	}
 
 	/**
@@ -423,6 +440,16 @@ public class SyncDeviceWrapper implements SyncDevice, ModelWrapper<SyncDevice> {
 	@Override
 	public void setFeatureSet(int featureSet) {
 		_syncDevice.setFeatureSet(featureSet);
+	}
+
+	/**
+	* Sets the login i p of this sync device.
+	*
+	* @param loginIP the login i p of this sync device
+	*/
+	@Override
+	public void setLoginIP(java.lang.String loginIP) {
+		_syncDevice.setLoginIP(loginIP);
 	}
 
 	/**

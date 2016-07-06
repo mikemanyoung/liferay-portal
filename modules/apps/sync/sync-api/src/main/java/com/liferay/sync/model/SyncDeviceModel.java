@@ -237,6 +237,21 @@ public interface SyncDeviceModel extends BaseModel<SyncDevice>, ShardedModel,
 	public void setFeatureSet(int featureSet);
 
 	/**
+	 * Returns the login i p of this sync device.
+	 *
+	 * @return the login i p of this sync device
+	 */
+	@AutoEscape
+	public String getLoginIP();
+
+	/**
+	 * Sets the login i p of this sync device.
+	 *
+	 * @param loginIP the login i p of this sync device
+	 */
+	public void setLoginIP(String loginIP);
+
+	/**
 	 * Returns the status of this sync device.
 	 *
 	 * @return the status of this sync device
