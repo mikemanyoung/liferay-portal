@@ -14,12 +14,12 @@
 
 package com.liferay.sync.engine.util;
 
+import com.liferay.sync.engine.SyncEngine;
 import com.liferay.sync.engine.listener.SyncEngineListener;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author Shinn Lok
@@ -50,7 +50,9 @@ public class SyncEngineUtil {
 		for (final SyncEngineListener syncEngineListener :
 				_syncEngineListeners) {
 
-			_executorService.execute(
+			ExecutorService executorService = SyncEngine.getExecutorService();
+
+			executorService.execute(
 				new Runnable() {
 
 					@Override
@@ -75,8 +77,6 @@ public class SyncEngineUtil {
 		_syncEngineListeners.remove(syncEngineListener);
 	}
 
-	private static final ExecutorService _executorService =
-		Executors.newSingleThreadScheduledExecutor();
 	private static final List<SyncEngineListener> _syncEngineListeners =
 		new ArrayList<>();
 
