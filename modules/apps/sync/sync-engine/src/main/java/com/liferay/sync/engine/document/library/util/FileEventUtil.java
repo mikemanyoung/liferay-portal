@@ -39,6 +39,7 @@ import com.liferay.sync.engine.service.SyncSiteService;
 import com.liferay.sync.engine.util.FileUtil;
 import com.liferay.sync.engine.util.IODeltaUtil;
 import com.liferay.sync.engine.util.PropsValues;
+import com.liferay.sync.engine.util.ReleaseInfo;
 import com.liferay.sync.engine.util.ServerInfo;
 
 import java.io.IOException;
@@ -66,7 +67,7 @@ public class FileEventUtil {
 
 		Map<String, Object> parameters = new HashMap<>();
 
-		parameters.put("changeLog", "");
+		parameters.put("changeLog", getChangeLog());
 		parameters.put("checksum", checksum);
 		parameters.put("description", "");
 		parameters.put("filePath", filePath);
@@ -472,7 +473,7 @@ public class FileEventUtil {
 
 		Map<String, Object> parameters = new HashMap<>();
 
-		parameters.put("changeLog", syncFile.getChangeLog());
+		parameters.put("changeLog", getChangeLog());
 		parameters.put("checksum", targetChecksum);
 		parameters.put("description", syncFile.getDescription());
 		parameters.put("fileEntryId", syncFile.getTypePK());
@@ -525,6 +526,10 @@ public class FileEventUtil {
 			syncAccountId, parameters);
 
 		updateFolderEvent.run();
+	}
+
+	protected static String getChangeLog() {
+		return "Uploaded with Liferay Sync " + ReleaseInfo.getVersion();
 	}
 
 	protected static boolean isDownloadInProgress(SyncFile syncFile) {
