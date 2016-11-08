@@ -69,8 +69,7 @@ public class SyncDLObjectPersistenceTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule = new AggregateTestRule(new LiferayIntegrationTestRule(),
 			PersistenceTestRule.INSTANCE,
-			new TransactionalTestRule(Propagation.REQUIRED,
-				"com.liferay.sync.service"));
+			new TransactionalTestRule(Propagation.REQUIRED));
 
 	@Before
 	public void setUp() {
