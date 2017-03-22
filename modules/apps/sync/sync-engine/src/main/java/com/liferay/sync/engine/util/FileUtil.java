@@ -482,6 +482,10 @@ public class FileUtil {
 			}
 		}
 
+		if (Validator.isBlank(syncFile.getChecksum())) {
+			return true;
+		}
+
 		return !checksumsEqual(getChecksum(filePath), syncFile.getChecksum());
 	}
 
