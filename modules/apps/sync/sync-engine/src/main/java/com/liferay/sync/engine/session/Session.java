@@ -20,6 +20,7 @@ import com.liferay.sync.engine.document.library.handler.Handler;
 import com.liferay.sync.engine.util.OSDetector;
 import com.liferay.sync.engine.util.PropsValues;
 import com.liferay.sync.engine.util.ReleaseInfo;
+import com.liferay.sync.engine.util.TrustManagerUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,6 +31,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
 import java.util.ArrayList;
@@ -45,6 +47,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.net.ssl.SSLContext;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -154,14 +158,18 @@ public class Session {
 		httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
 		httpClientBuilder.setRoutePlanner(getHttpRoutePlanner());
 
-		if (trustSelfSigned) {
-			try {
+		try {
+			if (trustSelfSigned) {
 				httpClientBuilder.setSSLSocketFactory(
 					_getTrustingSSLSocketFactory());
 			}
-			catch (Exception e) {
-				_logger.error(e.getMessage(), e);
+			else {
+				httpClientBuilder.setSSLSocketFactory(
+					_getDefaultSSLSocketFactory());
 			}
+		}
+		catch (Exception e) {
+			_logger.error(e.getMessage(), e);
 		}
 
 		return httpClientBuilder;
@@ -410,25 +418,48 @@ public class Session {
 		_trackTransferRateScheduledFuture.cancel(false);
 	}
 
+	private static SSLConnectionSocketFactory _getDefaultSSLSocketFactory()
+		throws Exception {
+
+		if (_defaultSSLSocketFactory == null) {
+			SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+
+			SSLContext sslContext = sslContextBuilder.build();
+
+			sslContext.init(
+				null, TrustManagerUtil.getTrustManagers(), new SecureRandom());
+
+			_defaultSSLSocketFactory = new SSLConnectionSocketFactory(
+				sslContext,
+				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+		}
+
+		return _defaultSSLSocketFactory;
+	}
+
 	private static SSLConnectionSocketFactory _getTrustingSSLSocketFactory()
 		throws Exception {
 
-		SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+		if (_trustingSSLSocketFactory == null) {
+			SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
-		sslContextBuilder.loadTrustMaterial(
-			new TrustStrategy() {
+			sslContextBuilder.loadTrustMaterial(
+				new TrustStrategy() {
 
-				@Override
-				public boolean isTrusted(
-					X509Certificate[] x509Certificates, String authType) {
+					@Override
+					public boolean isTrusted(
+						X509Certificate[] x509Certificates, String authType) {
 
-					return true;
-				}
+						return true;
+					}
 
-			});
+				});
 
-		return new SSLConnectionSocketFactory(
-			sslContextBuilder.build(), new NoopHostnameVerifier());
+			_trustingSSLSocketFactory = new SSLConnectionSocketFactory(
+				sslContextBuilder.build(), new NoopHostnameVerifier());
+		}
+
+		return _trustingSSLSocketFactory;
 	}
 
 	private void _buildHttpPostBody(
@@ -538,23 +569,27 @@ public class Session {
 		HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection>
 			connectionFactory = new SyncManagedHttpClientConnectionFactory();
 
-		if (trustSelfSigned) {
-			try {
-				RegistryBuilder<ConnectionSocketFactory> registryBuilder =
-					RegistryBuilder.create();
+		try {
+			RegistryBuilder<ConnectionSocketFactory> registryBuilder =
+				RegistryBuilder.create();
 
+			if (trustSelfSigned) {
 				registryBuilder.register(
 					"https", _getTrustingSSLSocketFactory());
-
-				Registry<ConnectionSocketFactory> registry =
-					registryBuilder.build();
-
-				return new PoolingHttpClientConnectionManager(
-					registry, connectionFactory);
 			}
-			catch (Exception e) {
-				_logger.error(e.getMessage(), e);
+			else {
+				registryBuilder.register(
+					"https", _getDefaultSSLSocketFactory());
 			}
+
+			Registry<ConnectionSocketFactory> registry =
+				registryBuilder.build();
+
+			return new PoolingHttpClientConnectionManager(
+				registry, connectionFactory);
+		}
+		catch (Exception e) {
+			_logger.error(e.getMessage(), e);
 		}
 
 		return new PoolingHttpClientConnectionManager(connectionFactory);
@@ -624,9 +659,11 @@ public class Session {
 	private static final Logger _logger = LoggerFactory.getLogger(
 		Session.class);
 
+	private static SSLConnectionSocketFactory _defaultSSLSocketFactory;
 	private static HttpRoutePlanner _httpRoutePlanner;
 	private static final ScheduledExecutorService _scheduledExecutorService =
 		Executors.newSingleThreadScheduledExecutor();
+	private static SSLConnectionSocketFactory _trustingSSLSocketFactory;
 
 	private BasicHttpContext _basicHttpContext;
 	private final AtomicInteger _downloadedBytes = new AtomicInteger(0);
