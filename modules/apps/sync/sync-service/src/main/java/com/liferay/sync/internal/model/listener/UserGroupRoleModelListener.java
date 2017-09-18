@@ -14,21 +14,9 @@
 
 package com.liferay.sync.internal.model.listener;
 
-import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.document.library.kernel.model.DLFolder;
-import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
-import com.liferay.portal.kernel.dao.orm.Disjunction;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.Property;
-import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.model.ModelListener;
-import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.UserGroupRole;
-import com.liferay.sync.model.SyncDLObject;
-
-import java.util.Date;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -43,127 +31,14 @@ public class UserGroupRoleModelListener
 	public void onAfterCreate(UserGroupRole userGroupRole)
 		throws ModelListenerException {
 
-		ActionableDynamicQuery actionableDynamicQuery =
-			resourcePermissionLocalService.getActionableDynamicQuery();
-
-		actionableDynamicQuery.setAddCriteriaMethod(
-			new ActionableDynamicQuery.AddCriteriaMethod() {
-
-				@Override
-				public void addCriteria(DynamicQuery dynamicQuery) {
-					Property nameProperty = PropertyFactoryUtil.forName("name");
-					Property roleIdProperty = PropertyFactoryUtil.forName(
-						"roleId");
-					Property viewActionIdProperty = PropertyFactoryUtil.forName(
-						"viewActionId");
-
-					Disjunction disjunction =
-						RestrictionsFactoryUtil.disjunction();
-
-					disjunction.add(
-						nameProperty.eq(DLFileEntry.class.getName()));
-					disjunction.add(nameProperty.eq(DLFolder.class.getName()));
-
-					dynamicQuery.add(disjunction);
-
-					dynamicQuery.add(
-						roleIdProperty.eq(userGroupRole.getRoleId()));
-					dynamicQuery.add(viewActionIdProperty.eq(true));
-				}
-
-			});
-		actionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.
-				PerformActionMethod<ResourcePermission>() {
-
-				@Override
-				public void performAction(
-					ResourcePermission resourcePermission) {
-
-					SyncDLObject syncDLObject = getSyncDLObject(
-						resourcePermission);
-
-					if (syncDLObject == null) {
-						return;
-					}
-
-					updateSyncDLObject(syncDLObject);
-				}
-
-			});
-
-		try {
-			actionableDynamicQuery.performActions();
-		}
-		catch (Exception e) {
-			throw new ModelListenerException(e);
-		}
+		onAddRoleAssociation(userGroupRole.getRoleId());
 	}
 
 	@Override
 	public void onAfterRemove(UserGroupRole userGroupRole)
 		throws ModelListenerException {
 
-		ActionableDynamicQuery actionableDynamicQuery =
-			resourcePermissionLocalService.getActionableDynamicQuery();
-
-		actionableDynamicQuery.setAddCriteriaMethod(
-			new ActionableDynamicQuery.AddCriteriaMethod() {
-
-				@Override
-				public void addCriteria(DynamicQuery dynamicQuery) {
-					Property nameProperty = PropertyFactoryUtil.forName("name");
-					Property roleIdProperty = PropertyFactoryUtil.forName(
-						"roleId");
-					Property viewActionIdProperty = PropertyFactoryUtil.forName(
-						"viewActionId");
-
-					Disjunction disjunction =
-						RestrictionsFactoryUtil.disjunction();
-
-					disjunction.add(
-						nameProperty.eq(DLFileEntry.class.getName()));
-					disjunction.add(nameProperty.eq(DLFolder.class.getName()));
-
-					dynamicQuery.add(disjunction);
-
-					dynamicQuery.add(
-						roleIdProperty.eq(userGroupRole.getRoleId()));
-					dynamicQuery.add(viewActionIdProperty.eq(true));
-				}
-
-			});
-		actionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.
-				PerformActionMethod<ResourcePermission>() {
-
-				@Override
-				public void performAction(
-					ResourcePermission resourcePermission) {
-
-					SyncDLObject syncDLObject = getSyncDLObject(
-						resourcePermission);
-
-					if (syncDLObject == null) {
-						return;
-					}
-
-					Date date = new Date();
-
-					syncDLObject.setModifiedTime(date.getTime());
-					syncDLObject.setLastPermissionChangeDate(date);
-
-					syncDLObjectLocalService.updateSyncDLObject(syncDLObject);
-				}
-
-			});
-
-		try {
-			actionableDynamicQuery.performActions();
-		}
-		catch (Exception e) {
-			throw new ModelListenerException(e);
-		}
+		onRemoveRoleAssociation(userGroupRole.getRoleId());
 	}
 
 }
